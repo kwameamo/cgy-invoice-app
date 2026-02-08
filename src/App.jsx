@@ -16,7 +16,6 @@ const InvoiceGenerator = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' }); // 'success', 'error', 'info'
-  const [isPrinting, setIsPrinting] = useState(false);
   const [paymentData, setPaymentData] = useState({
     amount: 0,
     paymentMethod: '',
@@ -405,55 +404,8 @@ const InvoiceGenerator = () => {
     setEditingInvoiceId(null);
   };
 
-  useEffect(() => {
-    // Handle print dialog events
-    const handleBeforePrint = () => {
-      setIsPrinting(true);
-    };
-    
-    const handleAfterPrint = () => {
-      // Delay to ensure print dialog is fully closed
-      setTimeout(() => {
-        setIsPrinting(false);
-      }, 300);
-    };
-    
-    // Also listen for visibility change (when user switches apps or closes print)
-    const handleVisibilityChange = () => {
-      if (document.hidden && isPrinting) {
-        // User might have closed print dialog by switching apps
-        setTimeout(() => {
-          setIsPrinting(false);
-        }, 500);
-      }
-    };
-    
-    window.addEventListener('beforeprint', handleBeforePrint);
-    window.addEventListener('afterprint', handleAfterPrint);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      window.removeEventListener('beforeprint', handleBeforePrint);
-      window.removeEventListener('afterprint', handleAfterPrint);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isPrinting]);
-
   const exportToPDF = () => {
-    setIsPrinting(true);
-    // Small delay to ensure state is set before print dialog opens
-    setTimeout(() => {
-      window.print();
-    }, 100);
-  };
-
-  const closePrintView = () => {
-    setIsPrinting(false);
-    // On iOS, we can't programmatically close the print dialog,
-    // but we can provide a visual indicator and instructions
-    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-      showNotification('Tap "Cancel" in the print dialog to return', 'info');
-    }
+    window.print();
   };
 
   const generateReceipt = (invoice, paymentEntry = null) => {
@@ -766,35 +718,7 @@ const InvoiceGenerator = () => {
           window.onload = function() {
             window.print();
           }
-          
-          // Add close button for iOS PWA
-          window.addEventListener('afterprint', function() {
-            // This will help detect when print dialog closes
-            if (window.opener) {
-              window.opener.postMessage('print-closed', '*');
-            }
-          });
         </script>
-        
-        <div style="position: fixed; top: 10px; right: 10px; z-index: 9999;" class="no-print-close">
-          <button onclick="window.close()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px;">
-            ✕ Close Window
-          </button>
-        </div>
-        
-        <style>
-          @media print {
-            .no-print-close {
-              display: none !important;
-            }
-          }
-          
-          @media not print {
-            .no-print-close {
-              display: block !important;
-            }
-          }
-        </style>
       </body>
       </html>
     `;
@@ -924,40 +848,6 @@ const InvoiceGenerator = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-4">
-      {/* Print Mode Overlay for iOS PWA */}
-      {isPrinting && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-[10000] flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-lg font-bold mb-4 text-gray-900">Print Preview Active</h3>
-            <p className="text-gray-700 mb-4">
-              To close the print dialog and return to the app:
-            </p>
-            <ol className="list-decimal list-inside text-gray-700 mb-6 space-y-2 text-sm">
-              <li>Tap <strong>"Cancel"</strong> in the print dialog</li>
-              <li>Or swipe down to dismiss (iOS)</li>
-            </ol>
-            <button
-              onClick={closePrintView}
-              className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 font-medium transition"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {/* Floating close button when printing */}
-      {isPrinting && (
-        <div className="fixed top-4 right-4 z-[10001] no-print">
-          <button
-            onClick={closePrintView}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg font-medium hover:bg-red-600 transition flex items-center gap-2"
-          >
-            <X size={18} /> Close
-          </button>
-        </div>
-      )}
-
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/ocr-a-extended');
         
