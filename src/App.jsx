@@ -878,6 +878,11 @@ const InvoiceGenerator = () => {
           input, select, button, textarea {
             font-size: 16px !important;
           }
+          
+          input[type="date"] {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
         }
         
         @keyframes slide-down {
@@ -1044,7 +1049,80 @@ const InvoiceGenerator = () => {
 
             <div>
               <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">All Invoices</h3>
-              <div className="bg-gray-50 rounded-lg overflow-x-auto shadow-sm">
+              
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {invoices.slice().reverse().map((inv) => (
+                  <div key={inv.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="font-semibold text-gray-900">{inv.invoiceNumber}</div>
+                        <div className="text-sm text-gray-600 mt-1">{inv.clientName || 'N/A'}</div>
+                        <div className="text-xs text-gray-500 mt-1">{formatDate(inv.invoiceDate)}</div>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        inv.status === 'PAID' ? 'bg-green-100 text-green-800' : 
+                        inv.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-orange-100 text-orange-800'
+                      }`}>
+                        {inv.status}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                      <div>
+                        <div className="text-gray-600 text-xs">Total</div>
+                        <div className="font-semibold text-gray-900">GHS {inv.total.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-600 text-xs">Balance</div>
+                        <div className="font-semibold text-gray-900">GHS {inv.balance.toFixed(2)}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => editInvoice(inv)}
+                        className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-xs font-medium flex items-center gap-1"
+                        title="Edit Invoice"
+                      >
+                        <Edit2 size={14} /> Edit
+                      </button>
+                      {inv.status !== 'PAID' && inv.balance > 0 && (
+                        <button
+                          onClick={() => openPaymentModal(inv)}
+                          className="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 transition text-xs font-medium flex items-center gap-1"
+                          title="Record Part Payment"
+                        >
+                          <DollarSign size={14} /> Payment
+                        </button>
+                      )}
+                      {(inv.status === 'PAID' || inv.paid > 0) && (
+                        <button
+                          onClick={() => generateReceipt(inv)}
+                          className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition text-xs font-medium flex items-center gap-1"
+                          title="Generate Receipt"
+                        >
+                          <Receipt size={14} /> Receipt
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteInvoice(inv.id)}
+                        className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition text-xs font-medium flex items-center gap-1"
+                        title="Delete Invoice"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {invoices.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
+                    No invoices found. Create your first invoice to get started!
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block bg-gray-50 rounded-lg overflow-x-auto shadow-sm">
                 <table className="w-full min-w-full">
                   <thead className="bg-gray-200">
                     <tr>
@@ -1174,7 +1252,8 @@ const InvoiceGenerator = () => {
                       type="date"
                       value={invoiceData.invoiceDate}
                       onChange={(e) => setInvoiceData({ ...invoiceData, invoiceDate: e.target.value })}
-                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition md:max-w-none"
+                      style={{ maxWidth: '100%' }}
                     />
                   </div>
                   <div>
@@ -1266,30 +1345,30 @@ const InvoiceGenerator = () => {
                         onChange={(e) => updateService(index, 'desc', e.target.value)}
                         className="flex-1 border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition w-full md:w-auto"
                       />
-                      <div className="flex gap-2 w-full md:w-auto">
+                      <div className="flex gap-2 w-full md:w-auto items-center flex-wrap">
                         <input
                           type="number"
                           placeholder="Rate"
                           value={service.unitRate || ''}
                           onChange={(e) => updateService(index, 'unitRate', parseFloat(e.target.value) || 0)}
-                          className="w-24 border-2 border-gray-300 px-3 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                          className="w-20 md:w-24 border-2 border-gray-300 px-2 md:px-3 py-2.5 rounded-lg text-sm md:text-base focus:border-blue-500 focus:outline-none transition"
                         />
                         <input
                           type="number"
                           placeholder="Qty"
                           value={service.count || ''}
                           onChange={(e) => updateService(index, 'count', parseInt(e.target.value) || 0)}
-                          className="w-20 border-2 border-gray-300 px-3 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                          className="w-16 md:w-20 border-2 border-gray-300 px-2 md:px-3 py-2.5 rounded-lg text-sm md:text-base focus:border-blue-500 focus:outline-none transition"
                         />
-                        <div className="flex-1 md:flex-none md:w-28 px-3 py-2.5 text-base text-gray-700 font-semibold bg-white rounded-lg border-2 border-gray-300 flex items-center">
+                        <div className="flex-1 md:flex-none md:w-28 px-2 md:px-3 py-2.5 text-sm md:text-base text-gray-700 font-semibold bg-white rounded-lg border-2 border-gray-300 flex items-center min-w-[80px]">
                           GHS {service.amount.toFixed(2)}
                         </div>
                         <button 
                           onClick={() => removeService(index)} 
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2.5 rounded-lg transition"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 md:p-2.5 rounded-lg transition flex-shrink-0"
                           title="Remove service"
                         >
-                          <Trash2 size={20} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
@@ -1364,22 +1443,22 @@ const InvoiceGenerator = () => {
               </div>
             </div>
 
-            <div className="print-area bg-white p-12 invoice-font text-sm">
-              <div className="flex justify-between mb-8">
+            <div className="print-area bg-white p-4 md:p-12 invoice-font text-xs md:text-sm">
+              <div className="flex flex-col md:flex-row md:justify-between mb-6 md:mb-8 gap-4">
                 <div>
-                  <div className="mb-1">{invoiceData.companyName}</div>
-                  <div className="mb-1">{invoiceData.companyAddress}</div>
-                  <div className="mb-1">{invoiceData.companyCity}</div>
-                  <div>{invoiceData.companyEmail}</div>
+                  <div className="mb-1 text-xs md:text-sm">{invoiceData.companyName}</div>
+                  <div className="mb-1 text-xs md:text-sm">{invoiceData.companyAddress}</div>
+                  <div className="mb-1 text-xs md:text-sm">{invoiceData.companyCity}</div>
+                  <div className="text-xs md:text-sm">{invoiceData.companyEmail}</div>
                 </div>
-                <div className="border-2 border-black px-4 py-2">
+                <div className="border-2 border-black px-3 md:px-4 py-2 text-xs md:text-sm">
                   <div>Invoice #:     {invoiceData.invoiceNumber}</div>
                   <div>Invoice Date: {formatDate(invoiceData.invoiceDate)}</div>
                 </div>
               </div>
 
-              <div className="mb-8">
-                <div className="mb-2">Billed To:</div>
+              <div className="mb-6 md:mb-8 text-xs md:text-sm">
+                <div className="mb-2 font-semibold">Billed To:</div>
                 <div>{invoiceData.clientName}</div>
                 <div>{invoiceData.clientAddress}</div>
                 <div>{invoiceData.clientCity}</div>
@@ -1387,40 +1466,40 @@ const InvoiceGenerator = () => {
                 {invoiceData.clientVAT && <div>VAT ID {invoiceData.clientVAT}</div>}
               </div>
 
-              <div className="mb-8">
+              <div className="mb-6 md:mb-8 text-xs md:text-sm">
                 {invoiceData.orderNo && <div>Order No.:     {invoiceData.orderNo}</div>}
                 {invoiceData.checkoutNo && <div>Checkout No.: {invoiceData.checkoutNo}</div>}
                 <div>Purchase Date: {formatDate(invoiceData.purchaseDate)}</div>
               </div>
 
-              <div className="mb-8">
-                <div className="text-center mb-4">Order {invoiceData.orderNo}</div>
-                <table className="w-full">
+              <div className="mb-6 md:mb-8">
+                <div className="text-center mb-3 md:mb-4 text-xs md:text-sm">Order {invoiceData.orderNo}</div>
+                <table className="w-full text-xs md:text-sm">
                   <thead>
                     <tr className="border-b border-black">
-                      <th className="text-left py-2">#</th>
-                      <th className="text-left py-2">Services</th>
-                      <th className="text-right py-2">Unit Rate</th>
-                      <th className="text-right py-2">Count</th>
-                      <th className="text-right py-2">Subtotal (GHS)</th>
+                      <th className="text-left py-1 md:py-2">#</th>
+                      <th className="text-left py-1 md:py-2">Services</th>
+                      <th className="text-right py-1 md:py-2">Unit Rate</th>
+                      <th className="text-right py-1 md:py-2">Count</th>
+                      <th className="text-right py-1 md:py-2">Subtotal (GHS)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {invoiceData.services.map((service, index) => (
                       <tr key={index} className="border-b border-gray-300">
-                        <td className="py-2">{index + 1}</td>
-                        <td className="py-2">{service.desc}</td>
-                        <td className="text-right py-2">{service.unitRate.toFixed(2)}</td>
-                        <td className="text-right py-2">{service.count}</td>
-                        <td className="text-right py-2">{service.amount.toFixed(2)}</td>
+                        <td className="py-1 md:py-2">{index + 1}</td>
+                        <td className="py-1 md:py-2">{service.desc}</td>
+                        <td className="text-right py-1 md:py-2">{service.unitRate.toFixed(2)}</td>
+                        <td className="text-right py-1 md:py-2">{service.count}</td>
+                        <td className="text-right py-1 md:py-2">{service.amount.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="flex justify-end mb-8">
-                <div className="w-64">
+              <div className="flex justify-end mb-6 md:mb-8">
+                <div className="w-full md:w-64 text-xs md:text-sm">
                   <div className="flex justify-between border-b py-1">
                     <span>Subtotal</span>
                     <span>{calculateSubtotal().toFixed(2)}</span>
@@ -1444,12 +1523,12 @@ const InvoiceGenerator = () => {
                 </div>
               </div>
 
-              <div className="text-center mb-8 border-b-2 border-double border-black pb-4">
+              <div className="text-center mb-6 md:mb-8 border-b-2 border-double border-black pb-3 md:pb-4 text-xs md:text-sm">
                 Invoice Status: {invoiceData.status}
               </div>
 
-              <div className="flex justify-end mb-8">
-                <div className="w-64">
+              <div className="flex justify-end mb-6 md:mb-8">
+                <div className="w-full md:w-64 text-xs md:text-sm">
                   <div className="flex justify-between border-b py-1">
                     <span>Paid</span>
                     <span>-{invoiceData.paid.toFixed(2)}</span>
@@ -1462,13 +1541,13 @@ const InvoiceGenerator = () => {
               </div>
 
               {invoiceData.paymentMethod && (
-                <div className="mb-8">
+                <div className="mb-6 md:mb-8 text-xs md:text-sm">
                   Payment Method: {invoiceData.paymentMethod}
                 </div>
               )}
 
               {(invoiceData.paymentAccountNumber || invoiceData.paymentLink) && (
-                <div className="mb-8">
+                <div className="mb-6 md:mb-8 text-xs md:text-sm">
                   <div className="font-bold mb-2">Payment Information:</div>
                   {invoiceData.paymentAccountNumber && (
                     <>
@@ -1480,13 +1559,13 @@ const InvoiceGenerator = () => {
                   {invoiceData.paymentLink && (
                     <div className="mt-2">
                       <div>or use the link below to pay:</div>
-                      <div className="text-blue-600 underline">{invoiceData.paymentLink}</div>
+                      <div className="text-blue-600 underline break-all">{invoiceData.paymentLink}</div>
                     </div>
                   )}
                 </div>
               )}
 
-              <div className="text-center">
+              <div className="text-center text-xs md:text-sm">
                 <div className="mb-2">***</div>
                 <div>Thank you for your business.</div>
               </div>
