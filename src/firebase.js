@@ -45,8 +45,17 @@ export const getUserInvoices = async (userId) => {
 
 export const saveInvoice = async (invoice) => {
   try {
-    const invoiceRef = doc(db, 'invoices', invoice.id);
-    await setDoc(invoiceRef, invoice, { merge: true });
+    const invoiceId = invoice.id;
+    // Remove id from the data since it's the document ID, not a field
+    const { id, ...invoiceData } = invoice;
+    
+    // Clean up undefined values (Firestore doesn't accept undefined)
+    const cleanData = Object.fromEntries(
+      Object.entries(invoiceData).filter(([_, value]) => value !== undefined)
+    );
+    
+    const invoiceRef = doc(db, 'invoices', invoiceId);
+    await setDoc(invoiceRef, cleanData, { merge: true });
     return invoice;
   } catch (error) {
     console.error('Error saving invoice:', error);

@@ -305,7 +305,8 @@ const InvoiceGenerator = () => {
       resetForm();
     } catch (error) {
       console.error('Error saving invoice:', error);
-      alert('Error saving invoice. Please try again.');
+      console.error('Error details:', error.message, error.code);
+      alert(`Error saving invoice: ${error.message || 'Please try again.'}`);
     }
   };
 
