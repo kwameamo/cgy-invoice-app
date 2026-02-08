@@ -1,6 +1,6 @@
 import logo from './assets/cgy_logo_new.png';
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Download, BarChart3, FileText, LogOut, Edit2, X, Receipt, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Download, BarChart3, FileText, LogOut, Edit2, X, Receipt, DollarSign, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { auth, signInWithGoogle, signInWithApple, logout, getUserInvoices, saveInvoice as saveInvoiceToFirestore, deleteInvoice as deleteInvoiceFromFirestore, getUserCounter, updateUserCounter } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -15,6 +15,7 @@ const InvoiceGenerator = () => {
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'info' }); // 'success', 'error', 'info'
   const [paymentData, setPaymentData] = useState({
     amount: 0,
     paymentMethod: '',
@@ -101,12 +102,19 @@ const InvoiceGenerator = () => {
     }
   };
 
+  const showNotification = (message, type = 'info') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'info' });
+    }, 4000);
+  };
+
   const handleGoogleLogin = async () => {
     try {
       await signInWithGoogle();
     } catch (error) {
       console.error('Google login error:', error);
-      alert('Failed to sign in with Google');
+      showNotification('Failed to sign in with Google', 'error');
     }
   };
 
@@ -206,7 +214,7 @@ const InvoiceGenerator = () => {
   const validateInvoice = () => {
     // 1. Client name
     if (!invoiceData.clientName.trim()) {
-      alert('Client name is required.');
+      showNotification('Client name is required.', 'error');
       return false;
     }
   
@@ -216,7 +224,7 @@ const InvoiceGenerator = () => {
     );
   
     if (!hasValidService) {
-      alert('At least one service must have a description and amount.');
+      showNotification('At least one service must have a description and amount.', 'error');
       return false;
     }
   
@@ -227,13 +235,13 @@ const InvoiceGenerator = () => {
       invoiceData.paymentLink.trim() !== '';
   
     if (!hasPaymentInfo) {
-      alert('Payment information is required.');
+      showNotification('Payment information is required.', 'error');
       return false;
     }
   
     // 4. Total must be greater than zero
     if (calculateTotal() <= 0) {
-      alert('Invoice total must be greater than zero.');
+      showNotification('Invoice total must be greater than zero.', 'error');
       return false;
     }
   
@@ -287,7 +295,7 @@ const InvoiceGenerator = () => {
           inv.id === editingInvoiceId ? invoiceToSave : inv
         );
         setEditingInvoiceId(null);
-        alert('Invoice updated successfully!');
+        showNotification('Invoice updated successfully!', 'success');
       } else {
         // Create new invoice
         updatedInvoices = [...invoices, invoiceToSave];
@@ -296,7 +304,7 @@ const InvoiceGenerator = () => {
         await updateUserCounter(userId, newCounter);
         setInvoiceCounter(newCounter);
         
-        alert('Invoice saved successfully!');
+        showNotification('Invoice saved successfully!', 'success');
       }
 
       setInvoices(updatedInvoices);
@@ -306,7 +314,7 @@ const InvoiceGenerator = () => {
     } catch (error) {
       console.error('Error saving invoice:', error);
       console.error('Error details:', error.message, error.code);
-      alert(`Error saving invoice: ${error.message || 'Please try again.'}`);
+      showNotification(`Error saving invoice: ${error.message || 'Please try again.'}`, 'error');
     }
   };
 
@@ -384,10 +392,10 @@ const InvoiceGenerator = () => {
       
       const updatedInvoices = invoices.filter(inv => inv.id !== invoiceId);
       setInvoices(updatedInvoices);
-      alert('Invoice deleted successfully!');
+      showNotification('Invoice deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting invoice:', error);
-      alert('Error deleting invoice. Please try again.');
+      showNotification('Error deleting invoice. Please try again.', 'error');
     }
   };
 
@@ -708,18 +716,18 @@ const InvoiceGenerator = () => {
     
     const paymentAmount = parseFloat(paymentData.amount);
     if (paymentAmount <= 0) {
-      alert('Payment amount must be greater than zero.');
+      showNotification('Payment amount must be greater than zero.', 'error');
       return;
     }
 
     if (!paymentData.paymentMethod.trim()) {
-      alert('Payment method is required.');
+      showNotification('Payment method is required.', 'error');
       return;
     }
 
     const currentBalance = selectedInvoiceForPayment.balance || (selectedInvoiceForPayment.total - selectedInvoiceForPayment.paid);
     if (paymentAmount > currentBalance) {
-      alert(`Payment amount cannot exceed the remaining balance of GHS ${currentBalance.toFixed(2)}.`);
+      showNotification(`Payment amount cannot exceed the remaining balance of GHS ${currentBalance.toFixed(2)}.`, 'error');
       return;
     }
 
@@ -760,7 +768,7 @@ const InvoiceGenerator = () => {
     generateReceipt(updatedInvoice, paymentEntry);
 
     closePaymentModal();
-    alert('Payment recorded and receipt generated!');
+    showNotification('Payment recorded and receipt generated!', 'success');
   };
 
   const getStats = () => {
@@ -796,7 +804,7 @@ const InvoiceGenerator = () => {
   const stats = getStats();
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-4">
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/ocr-a-extended');
         
@@ -824,40 +832,115 @@ const InvoiceGenerator = () => {
         }
         
         @media (max-width: 768px) {
-          input, select, button {
+          input, select, button, textarea {
             font-size: 16px !important;
           }
         }
+        
+        @keyframes slide-down {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -20px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+        
+        .animate-slide-down {
+          animation: slide-down 0.3s ease-out;
+        }
       `}</style>
 
-      <div className="max-w-6xl mx-auto">
-        <div className="no-print mb-4 md:mb-6 flex flex-col sm:flex-row gap-2 md:gap-4">
+      {/* Notification Modal */}
+      {notification.show && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 animate-slide-down">
+          <div className={`rounded-lg shadow-lg p-4 flex items-start gap-3 ${
+            notification.type === 'success' ? 'bg-green-50 border border-green-200' :
+            notification.type === 'error' ? 'bg-red-50 border border-red-200' :
+            'bg-blue-50 border border-blue-200'
+          }`}>
+            {notification.type === 'success' && <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />}
+            {notification.type === 'error' && <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />}
+            {notification.type === 'info' && <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />}
+            <p className={`flex-1 text-sm ${
+              notification.type === 'success' ? 'text-green-800' :
+              notification.type === 'error' ? 'text-red-800' :
+              'text-blue-800'
+            }`}>
+              {notification.message}
+            </p>
+            <button
+              onClick={() => setNotification({ show: false, message: '', type: 'info' })}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
+        {/* Desktop Navigation */}
+        <div className="no-print hidden md:flex mb-6 gap-4">
           <button
             onClick={() => setCurrentView('create')}
-            className={`flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded ${
-              currentView === 'create' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${
+              currentView === 'create' ? 'bg-blue-500 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
             <FileText size={20} /> {editingInvoiceId ? 'Edit Invoice' : 'Create Invoice'}
           </button>
           <button
             onClick={() => setCurrentView('stats')}
-            className={`flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded ${
-              currentView === 'stats' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${
+              currentView === 'stats' ? 'bg-blue-500 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
             <BarChart3 size={20} /> Statistics
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded bg-red-500 text-white hover:bg-red-600 sm:ml-auto"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 ml-auto font-medium transition"
           >
             <LogOut size={20} /> Logout
           </button>
         </div>
 
+        {/* Mobile Bottom Navigation */}
+        <div className="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-40">
+          <div className="flex justify-around items-center h-16">
+            <button
+              onClick={() => setCurrentView('create')}
+              className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
+                currentView === 'create' ? 'text-blue-500' : 'text-gray-600'
+              }`}
+            >
+              <FileText size={22} />
+              <span className="text-xs font-medium">Create</span>
+            </button>
+            <button
+              onClick={() => setCurrentView('stats')}
+              className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
+                currentView === 'stats' ? 'text-blue-500' : 'text-gray-600'
+              }`}
+            >
+              <BarChart3 size={22} />
+              <span className="text-xs font-medium">Stats</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg text-red-500 transition"
+            >
+              <LogOut size={22} />
+              <span className="text-xs font-medium">Logout</span>
+            </button>
+          </div>
+        </div>
+
         {currentView === 'stats' && (
-          <div className="no-print bg-white p-4 md:p-6 rounded shadow">
+          <div className="no-print bg-white p-4 md:p-6 rounded-lg shadow-sm mb-4">
             <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Invoice Statistics</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
@@ -918,7 +1001,7 @@ const InvoiceGenerator = () => {
 
             <div>
               <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4">All Invoices</h3>
-              <div className="bg-gray-50 rounded overflow-x-auto">
+              <div className="bg-gray-50 rounded-lg overflow-x-auto shadow-sm">
                 <table className="w-full min-w-full">
                   <thead className="bg-gray-200">
                     <tr>
@@ -952,27 +1035,27 @@ const InvoiceGenerator = () => {
                           <div className="flex gap-2 justify-center flex-wrap">
                             <button
                               onClick={() => editInvoice(inv)}
-                              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                              className="bg-blue-500 text-white p-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm"
                               title="Edit Invoice"
                             >
-                              <Edit2 size={16} />
+                              <Edit2 size={18} />
                             </button>
                             {inv.status !== 'PAID' && inv.balance > 0 && (
                               <button
                                 onClick={() => openPaymentModal(inv)}
-                                className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600"
+                                className="bg-yellow-500 text-white p-2.5 rounded-lg hover:bg-yellow-600 transition shadow-sm"
                                 title="Record Part Payment"
                               >
-                                <DollarSign size={16} />
+                                <DollarSign size={18} />
                               </button>
                             )}
                             {(inv.status === 'PAID' || inv.paid > 0) && (
                               <button
                                 onClick={() => generateReceipt(inv)}
-                                className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
+                                className="bg-green-500 text-white p-2.5 rounded-lg hover:bg-green-600 transition shadow-sm"
                                 title={inv.status === 'PAID' ? 'Generate Full Receipt' : 'Generate Payment Summary Receipt'}
                               >
-                                <Receipt size={16} />
+                                <Receipt size={18} />
                               </button>
                             )}
                             {inv.paymentHistory && inv.paymentHistory.length > 0 && (
@@ -981,18 +1064,18 @@ const InvoiceGenerator = () => {
                                   const lastPayment = inv.paymentHistory[inv.paymentHistory.length - 1];
                                   generateReceipt(inv, lastPayment);
                                 }}
-                                className="bg-purple-500 text-white p-2 rounded hover:bg-purple-600"
+                                className="bg-purple-500 text-white p-2.5 rounded-lg hover:bg-purple-600 transition shadow-sm"
                                 title="Generate Last Payment Receipt"
                               >
-                                <Receipt size={16} />
+                                <Receipt size={18} />
                               </button>
                             )}
                             <button
                               onClick={() => deleteInvoice(inv.id)}
-                              className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+                              className="bg-red-500 text-white p-2.5 rounded-lg hover:bg-red-600 transition shadow-sm"
                               title="Delete Invoice"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={18} />
                             </button>
                           </div>
                         </td>
@@ -1012,201 +1095,208 @@ const InvoiceGenerator = () => {
 
         {currentView === 'create' && (
           <>
-            <div className="no-print mb-4 md:mb-6 bg-white p-4 md:p-6 rounded shadow">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2">
+            <div className="no-print mb-4 bg-white p-4 md:p-6 rounded-lg shadow-sm">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-3">
                 <div>
-                  <h1 className="text-xl font-bold">
+                  <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                     {editingInvoiceId ? 'Edit Invoice' : 'New Invoice'}
                   </h1>
-                  <p className="text-sm text-gray-500">{invoiceData.invoiceNumber}</p>
+                  <p className="text-sm text-gray-500 mt-1">{invoiceData.invoiceNumber}</p>
                 </div>
                 {editingInvoiceId && (
                   <button
                     onClick={cancelEdit}
-                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center gap-2"
+                    className="bg-gray-500 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 font-medium transition"
                   >
-                    <X size={16} /> Cancel
+                    <X size={18} /> Cancel
                   </button>
                 )}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Client Name *</label>
-                  <input
-                    type="text"
-                    placeholder="Client Name"
-                    value={invoiceData.clientName}
-                    onChange={(e) => setInvoiceData({ ...invoiceData, clientName: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
-                  />
+              <div className="space-y-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Client Name *</label>
+                    <input
+                      type="text"
+                      placeholder="Client Name"
+                      value={invoiceData.clientName}
+                      onChange={(e) => setInvoiceData({ ...invoiceData, clientName: e.target.value })}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Invoice Date</label>
+                    <input
+                      type="date"
+                      value={invoiceData.invoiceDate}
+                      onChange={(e) => setInvoiceData({ ...invoiceData, invoiceDate: e.target.value })}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Status</label>
+                    <select
+                      value={invoiceData.status}
+                      onChange={(e) => setInvoiceData({ ...invoiceData, status: e.target.value })}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    >
+                      <option value="UNPAID">UNPAID</option>
+                      <option value="PENDING">PENDING</option>
+                      <option value="PAID">PAID</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Invoice Date</label>
-                  <input
-                    type="date"
-                    value={invoiceData.invoiceDate}
-                    onChange={(e) => setInvoiceData({ ...invoiceData, invoiceDate: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
-                  />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Client Address (optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Address, City"
+                      value={`${invoiceData.clientAddress}${invoiceData.clientAddress && invoiceData.clientCity ? ', ' : ''}${invoiceData.clientCity}`}
+                      onChange={(e) => {
+                        const parts = e.target.value.split(',').map(s => s.trim());
+                        setInvoiceData({ 
+                          ...invoiceData, 
+                          clientAddress: parts[0] || '', 
+                          clientCity: parts.slice(1).join(', ') || '' 
+                        });
+                      }}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Payment Method *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Mobile Money, Bank Transfer"
+                      value={invoiceData.paymentMethod}
+                      onChange={(e) => setInvoiceData({ ...invoiceData, paymentMethod: e.target.value })}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
-                  <select
-                    value={invoiceData.status}
-                    onChange={(e) => setInvoiceData({ ...invoiceData, status: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Payment Account</label>
+                    <input
+                      type="text"
+                      placeholder="Account Number"
+                      value={invoiceData.paymentAccountNumber}
+                      onChange={(e) => setInvoiceData({ ...invoiceData, paymentAccountNumber: e.target.value })}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">Payment Link (optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Payment link URL"
+                      value={invoiceData.paymentLink}
+                      onChange={(e) => setInvoiceData({ ...invoiceData, paymentLink: e.target.value })}
+                      className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold text-lg text-gray-900">Services</h3>
+                  <button 
+                    onClick={addService} 
+                    className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 text-sm font-medium transition shadow-sm"
                   >
-                    <option value="UNPAID">UNPAID</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="PAID">PAID</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Client Address (optional)</label>
-                  <input
-                    type="text"
-                    placeholder="Address, City"
-                    value={`${invoiceData.clientAddress}${invoiceData.clientAddress && invoiceData.clientCity ? ', ' : ''}${invoiceData.clientCity}`}
-                    onChange={(e) => {
-                      const parts = e.target.value.split(',').map(s => s.trim());
-                      setInvoiceData({ 
-                        ...invoiceData, 
-                        clientAddress: parts[0] || '', 
-                        clientCity: parts.slice(1).join(', ') || '' 
-                      });
-                    }}
-                    className="w-full border px-3 py-2 rounded text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Payment Method *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Mobile Money, Bank Transfer"
-                    value={invoiceData.paymentMethod}
-                    onChange={(e) => setInvoiceData({ ...invoiceData, paymentMethod: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Payment Account</label>
-                  <input
-                    type="text"
-                    placeholder="Account Number"
-                    value={invoiceData.paymentAccountNumber}
-                    onChange={(e) => setInvoiceData({ ...invoiceData, paymentAccountNumber: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Payment Link (optional)</label>
-                  <input
-                    type="text"
-                    placeholder="Payment link URL"
-                    value={invoiceData.paymentLink}
-                    onChange={(e) => setInvoiceData({ ...invoiceData, paymentLink: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-semibold text-base">Services</h3>
-                  <button onClick={addService} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
-                    <Plus size={16} /> Add Service
+                    <Plus size={18} /> Add Service
                   </button>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {invoiceData.services.map((service, index) => (
-                    <div key={index} className="flex gap-2 items-center bg-gray-50 p-2 rounded">
+                    <div key={index} className="flex flex-col md:flex-row gap-2 items-start md:items-center bg-gray-50 p-3 md:p-4 rounded-lg border border-gray-200">
                       <input
                         type="text"
-                        placeholder="Description"
+                        placeholder="Service description"
                         value={service.desc}
                         onChange={(e) => updateService(index, 'desc', e.target.value)}
-                        className="flex-1 border px-3 py-2 rounded text-base"
+                        className="flex-1 border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition w-full md:w-auto"
                       />
-                      <input
-                        type="number"
-                        placeholder="Rate"
-                        value={service.unitRate || ''}
-                        onChange={(e) => updateService(index, 'unitRate', parseFloat(e.target.value) || 0)}
-                        className="w-24 border px-2 py-2 rounded text-base"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Qty"
-                        value={service.count || ''}
-                        onChange={(e) => updateService(index, 'count', parseInt(e.target.value) || 0)}
-                        className="w-20 border px-2 py-2 rounded text-base"
-                      />
-                      <div className="w-24 px-3 py-2 text-base text-gray-600 font-medium">
-                        GHS {service.amount.toFixed(2)}
+                      <div className="flex gap-2 w-full md:w-auto">
+                        <input
+                          type="number"
+                          placeholder="Rate"
+                          value={service.unitRate || ''}
+                          onChange={(e) => updateService(index, 'unitRate', parseFloat(e.target.value) || 0)}
+                          className="w-24 border-2 border-gray-300 px-3 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Qty"
+                          value={service.count || ''}
+                          onChange={(e) => updateService(index, 'count', parseInt(e.target.value) || 0)}
+                          className="w-20 border-2 border-gray-300 px-3 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
+                        />
+                        <div className="flex-1 md:flex-none md:w-28 px-3 py-2.5 text-base text-gray-700 font-semibold bg-white rounded-lg border-2 border-gray-300 flex items-center">
+                          GHS {service.amount.toFixed(2)}
+                        </div>
+                        <button 
+                          onClick={() => removeService(index)} 
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2.5 rounded-lg transition"
+                          title="Remove service"
+                        >
+                          <Trash2 size={20} />
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => removeService(index)} 
-                        className="text-red-500 hover:text-red-700 p-2"
-                        title="Remove service"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-gray-50 rounded">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Discount</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Discount</label>
                   <input
                     type="number"
                     value={invoiceData.discount}
                     onChange={(e) => setInvoiceData({ ...invoiceData, discount: parseFloat(e.target.value) || 0 })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Tax</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tax</label>
                   <input
                     type="number"
                     value={invoiceData.tax}
                     onChange={(e) => setInvoiceData({ ...invoiceData, tax: parseFloat(e.target.value) || 0 })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                     placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Paid</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Paid</label>
                   <input
                     type="number"
                     value={invoiceData.paid}
                     onChange={(e) => setInvoiceData({ ...invoiceData, paid: parseFloat(e.target.value) || 0 })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                     placeholder="0"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={saveInvoice}
-                  className="flex-1 bg-blue-500 text-white py-3 rounded hover:bg-blue-600 text-base"
+                  className="flex-1 bg-blue-500 text-white py-3.5 rounded-lg hover:bg-blue-600 text-base font-medium transition shadow-sm"
                 >
                   {editingInvoiceId ? 'Update Invoice' : 'Save Invoice'}
                 </button>
                 <button
                   onClick={exportToPDF}
-                  className="flex-1 bg-green-500 text-white py-3 rounded hover:bg-green-600 flex items-center justify-center gap-2 text-base"
+                  className="flex-1 bg-green-500 text-white py-3.5 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm"
                 >
                   <Download size={20} /> Export to PDF
                 </button>
@@ -1223,7 +1313,7 @@ const InvoiceGenerator = () => {
                       };
                       generateReceipt(currentInvoice);
                     }}
-                    className="flex-1 bg-purple-500 text-white py-3 rounded hover:bg-purple-600 flex items-center justify-center gap-2 text-base"
+                    className="flex-1 bg-purple-500 text-white py-3.5 rounded-lg hover:bg-purple-600 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm"
                   >
                     <Receipt size={20} /> Generate Receipt
                   </button>
@@ -1364,7 +1454,7 @@ const InvoiceGenerator = () => {
         {/* Payment Modal */}
         {showPaymentModal && selectedInvoiceForPayment && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Record Part Payment</h2>
                 <button
@@ -1395,54 +1485,54 @@ const InvoiceGenerator = () => {
                     max={selectedInvoiceForPayment.balance || (selectedInvoiceForPayment.total - (selectedInvoiceForPayment.paid || 0))}
                     value={paymentData.amount}
                     onChange={(e) => setPaymentData({ ...paymentData, amount: parseFloat(e.target.value) || 0 })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                     placeholder="Enter payment amount"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Payment Method</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Payment Method</label>
                   <input
                     type="text"
                     value={paymentData.paymentMethod}
                     onChange={(e) => setPaymentData({ ...paymentData, paymentMethod: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                     placeholder="e.g., Mobile Money, Bank Transfer, Cash"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Payment Date</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Payment Date</label>
                   <input
                     type="date"
                     value={paymentData.paymentDate}
                     onChange={(e) => setPaymentData({ ...paymentData, paymentDate: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Notes (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Notes (Optional)</label>
                   <textarea
                     value={paymentData.notes}
                     onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })}
-                    className="w-full border px-3 py-2 rounded text-base"
+                    className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition"
                     rows="3"
                     placeholder="Additional notes about this payment"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
                 <button
                   onClick={closePaymentModal}
-                  className="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
+                  className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 font-medium transition shadow-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={recordPartPayment}
-                  className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600 flex items-center justify-center gap-2"
+                  className="flex-1 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 font-medium transition shadow-sm"
                 >
                   <Receipt size={18} /> Record Payment & Generate Receipt
                 </button>
