@@ -416,10 +416,27 @@ const InvoiceGenerator = () => {
     const receiptNumber = isPartialPayment 
       ? `${invoice.invoiceNumber}-RCP-${paymentEntry.id || Date.now()}`
       : invoice.invoiceNumber;
-    const totalPaidSoFar = invoice.paymentHistory 
-      ? invoice.paymentHistory.reduce((sum, p) => sum + p.amount, 0) + (isPartialPayment ? paymentEntry.amount : 0)
-      : (isPartialPayment ? paymentEntry.amount : invoice.paid);
-    const remainingBalance = invoice.total - totalPaidSoFar;
+    
+    // Calculate total paid so far correctly
+    // For partial payments: paymentHistory already includes the current paymentEntry
+    // For full payments: use invoice.paid or invoice.total if status is PAID
+    let totalPaidSoFar;
+    if (isPartialPayment) {
+      // For partial payment receipts, paymentHistory already includes this payment
+      totalPaidSoFar = invoice.paymentHistory 
+        ? invoice.paymentHistory.reduce((sum, p) => sum + p.amount, 0)
+        : invoice.paid || 0;
+    } else {
+      // For full payment receipts
+      if (invoice.status === 'PAID') {
+        totalPaidSoFar = invoice.total;
+      } else {
+        totalPaidSoFar = invoice.paid || 0;
+      }
+    }
+    
+    // Calculate remaining balance (should be 0 if fully paid)
+    const remainingBalance = Math.max(0, invoice.total - totalPaidSoFar);
     
     // Create a temporary div for the receipt
     const receiptWindow = window.open('', '_blank');
@@ -439,6 +456,32 @@ const InvoiceGenerator = () => {
             margin: 0 auto;
             font-size: 14px;
             line-height: 1.6;
+          }
+          
+          @media (max-width: 768px) {
+            body {
+              padding: 20px;
+              font-size: 11px;
+            }
+            
+            .receipt-title {
+              font-size: 18px !important;
+            }
+            
+            .payment-status {
+              font-size: 14px !important;
+              padding: 10px !important;
+            }
+            
+            .items-table th,
+            .items-table td {
+              padding: 6px !important;
+              font-size: 10px !important;
+            }
+            
+            .total-row.grand-total {
+              font-size: 14px !important;
+            }
           }
           
           .receipt-header {
