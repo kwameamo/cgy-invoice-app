@@ -78,14 +78,21 @@ const InvoiceGenerator = () => {
   // Background refresh when Stats page is active (every 30 seconds)
   useEffect(() => {
     if (currentView !== 'stats' || !userId) return;
+    
     const refreshStats = async () => {
       try {
-        await loadUserData(userId, { silent: true });
+        const loadedInvoices = await getUserInvoices(userId);
+        const normalizedInvoices = loadedInvoices.map(inv => ({
+          ...inv,
+          paymentHistory: inv.paymentHistory || []
+        }));
+        setInvoices(normalizedInvoices);
         setLastStatsRefresh(new Date());
       } catch (err) {
         console.error('Background refresh failed:', err);
       }
     };
+    
     refreshStats(); // Initial refresh when switching to stats
     const interval = setInterval(refreshStats, 30000);
     return () => clearInterval(interval);
@@ -929,14 +936,14 @@ const InvoiceGenerator = () => {
 
   const stats = getStats();
 
-  const filteredStatsInvoices = invoices.filter(inv => {
+  const filteredStatsInvoices = (invoices && Array.isArray(invoices)) ? invoices.filter(inv => {
     if (!statsSearchQuery.trim()) return true;
     const q = statsSearchQuery.toLowerCase().trim();
     return (
       (inv.invoiceNumber || '').toLowerCase().includes(q) ||
       (inv.clientName || '').toLowerCase().includes(q)
     );
-  });
+  }) : [];
 
   const formatLastUpdated = (date) => {
     if (!date) return null;
