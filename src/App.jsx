@@ -213,22 +213,27 @@ const InvoiceGenerator = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="max-w-sm w-full">
+      <div className="min-h-screen dot-grid-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg">
           <div className="text-center mb-8">
-            <img
-              src={logo}
-              alt="Curio Graphics Yard Logo"
-              className="mx-auto mb-6 w-24 h-auto"
-            />
-            <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full border-2 border-gray-900 flex items-center justify-center">
+              <img
+                src={logo}
+                alt="Curio Graphics Yard Logo"
+                className="w-10 h-10 object-contain"
+              />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Invoice Management
             </h1>
+            <p className="text-gray-600 text-sm">
+              Sign in to manage your invoices
+            </p>
           </div>
 
           <button
             onClick={handleGoogleLogin}
-            className="w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-3 font-medium transition-colors"
+            className="w-full bg-gray-900 text-white py-3.5 px-4 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-3 font-medium transition-colors shadow-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -245,10 +250,10 @@ const InvoiceGenerator = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your invoices...</p>
+      <div className="min-h-screen dot-grid-background flex items-center justify-center">
+        <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-700 font-medium">Loading your invoices...</p>
         </div>
       </div>
     );
@@ -759,7 +764,7 @@ const InvoiceGenerator = () => {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-4">
+    <div className="min-h-screen dot-grid-background pb-20 md:pb-4">
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/ocr-a-extended');
         .invoice-font { font-family: 'OCR A Extended', monospace; }
@@ -771,7 +776,7 @@ const InvoiceGenerator = () => {
         }
         @media (max-width: 768px) {
           input, select, button, textarea { font-size: 16px !important; }
-          input[type="date"], input[type="datetime-local"], input[type="time"] { width: 100% !important; max-width: 100% !important; -webkit-appearance: none !important; -moz-appearance: textfield !important; appearance: none !important; background-color: white !important; border: 2px solid #d1d5db !important; border-radius: 0.5rem !important; padding: 0.75rem 1rem !important; color: #111827 !important; font-size: 16px !important; }
+          input[type="date"], input[type="datetime-local"], input[type="time"] { width: 100% !important; max-width: 100% !important; -webkit-appearance: none !important; -moz-appearance: textfield !important; appearance: none !important; background-color: white !important; border: 1px solid rgba(0, 0, 0, 0.1) !important; border-radius: 0.5rem !important; padding: 0.75rem 1rem !important; color: #111827 !important; font-size: 16px !important; }
           input[type="date"]::-webkit-calendar-picker-indicator, input[type="datetime-local"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E"); background-size: 16px 16px; background-repeat: no-repeat; background-position: right 0.75rem center; cursor: pointer; width: 20px; height: 20px; padding: 0; margin: 0; opacity: 1; }
           select { -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; background-color: white !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23334155' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 12px 12px; padding-right: 2.5rem !important; color: #111827 !important; }
           select::-ms-expand { display: none; }
@@ -785,24 +790,24 @@ const InvoiceGenerator = () => {
       {/* Notification */}
       {notification.show && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 animate-slide-down">
-          <div className={`rounded-lg shadow-lg p-4 flex items-start gap-3 ${
-            notification.type === 'success' ? 'bg-green-50 border border-green-200' :
-            notification.type === 'error' ? 'bg-red-50 border border-red-200' :
-            'bg-blue-50 border border-blue-200'
+          <div className={`rounded-lg shadow-lg p-4 flex items-start gap-3 bg-white border ${
+            notification.type === 'success' ? 'border-green-300' :
+            notification.type === 'error' ? 'border-red-300' :
+            'border-blue-300'
           }`}>
             {notification.type === 'success' && <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />}
             {notification.type === 'error' && <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />}
             {notification.type === 'info' && <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />}
-            <p className={`flex-1 text-sm ${
-              notification.type === 'success' ? 'text-green-800' :
-              notification.type === 'error' ? 'text-red-800' :
-              'text-blue-800'
+            <p className={`flex-1 text-sm font-medium ${
+              notification.type === 'success' ? 'text-green-900' :
+              notification.type === 'error' ? 'text-red-900' :
+              'text-blue-900'
             }`}>
               {notification.message}
             </p>
             <button
               onClick={() => setNotification({ show: false, message: '', type: 'info' })}
-              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+              className="flex-shrink-0 text-gray-400 hover:text-gray-700"
             >
               <X size={18} />
             </button>
@@ -838,12 +843,12 @@ const InvoiceGenerator = () => {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <div className="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-40">
+        <div className="no-print fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg md:hidden z-40">
           <div className="flex justify-around items-center h-16">
             <button
               onClick={() => setCurrentView('create')}
               className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
-                currentView === 'create' ? 'text-blue-500' : 'text-gray-600'
+                currentView === 'create' ? 'text-gray-900 font-semibold' : 'text-gray-600'
               }`}
             >
               <FileText size={22} />
@@ -852,7 +857,7 @@ const InvoiceGenerator = () => {
             <button
               onClick={() => setCurrentView('stats')}
               className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
-                currentView === 'stats' ? 'text-blue-500' : 'text-gray-600'
+                currentView === 'stats' ? 'text-gray-900 font-semibold' : 'text-gray-600'
               }`}
             >
               <BarChart3 size={22} />
@@ -860,7 +865,7 @@ const InvoiceGenerator = () => {
             </button>
             <button
               onClick={handleLogout}
-              className="flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg text-red-500 transition"
+              className="flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg text-gray-600 transition"
             >
               <LogOut size={22} />
               <span className="text-xs font-medium">Logout</span>
@@ -870,7 +875,7 @@ const InvoiceGenerator = () => {
 
         {/* ─── STATS VIEW ─── */}
         {currentView === 'stats' && (
-          <div className="no-print bg-white p-4 md:p-6 rounded-lg shadow-sm mb-4">
+          <div className="no-print bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-sm mb-4 border border-gray-200/50">
             {/* Stats Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3">
               <div>
@@ -882,14 +887,14 @@ const InvoiceGenerator = () => {
               <div className="flex gap-2 items-center">
                 <button
                   onClick={() => exportToCSV(filteredInvoices)}
-                  className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-medium transition shadow-sm"
+                  className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 text-sm font-medium transition shadow-sm"
                 >
                   <Download size={16} /> Export CSV
                 </button>
                 <button
                   onClick={() => refreshInvoices(userId, true)}
                   disabled={isRefreshing}
-                  className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-medium transition shadow-sm disabled:opacity-60"
+                  className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 text-sm font-medium transition shadow-sm disabled:opacity-60"
                 >
                   <RefreshCw size={16} className={isRefreshing ? 'spin' : ''} />
                   {isRefreshing ? 'Refreshing…' : 'Refresh'}
@@ -899,42 +904,42 @@ const InvoiceGenerator = () => {
 
             {/* Main stats grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-              <div className="bg-blue-50 p-4 md:p-6 rounded">
-                <div className="text-xs md:text-sm text-gray-600 mb-2">Total Revenue</div>
-                <div className="text-2xl md:text-3xl font-bold text-blue-600">GHS {stats.totalRevenue.toFixed(2)}</div>
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-600 mb-2 font-medium">Total Revenue</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900">GHS {stats.totalRevenue.toFixed(2)}</div>
               </div>
-              <div className="bg-green-50 p-4 md:p-6 rounded">
-                <div className="text-xs md:text-sm text-gray-600 mb-2">Total Paid</div>
-                <div className="text-2xl md:text-3xl font-bold text-green-600">GHS {stats.totalPaid.toFixed(2)}</div>
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-600 mb-2 font-medium">Total Paid</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900">GHS {stats.totalPaid.toFixed(2)}</div>
               </div>
-              <div className="bg-orange-50 p-4 md:p-6 rounded">
-                <div className="text-xs md:text-sm text-gray-600 mb-2">Outstanding</div>
-                <div className="text-2xl md:text-3xl font-bold text-orange-600">GHS {stats.totalOutstanding.toFixed(2)}</div>
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-600 mb-2 font-medium">Outstanding</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900">GHS {stats.totalOutstanding.toFixed(2)}</div>
               </div>
             </div>
 
             {/* Count stats */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-              <div className="bg-gray-50 p-4 md:p-6 rounded">
-                <div className="text-xs md:text-sm text-gray-600 mb-2">Total Invoices</div>
-                <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.totalInvoices}</div>
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-600 mb-2 font-medium">Total Invoices</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900">{stats.totalInvoices}</div>
               </div>
-              <div className="bg-gray-50 p-4 md:p-6 rounded">
-                <div className="text-xs md:text-sm text-gray-600 mb-2">Paid Invoices</div>
-                <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.paidInvoices}</div>
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-600 mb-2 font-medium">Paid Invoices</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900">{stats.paidInvoices}</div>
               </div>
-              <div className="bg-gray-50 p-4 md:p-6 rounded">
-                <div className="text-xs md:text-sm text-gray-600 mb-2">Unpaid Invoices</div>
-                <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.unpaidInvoices}</div>
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-600 mb-2 font-medium">Unpaid Invoices</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900">{stats.unpaidInvoices}</div>
               </div>
               {/* This month */}
-              <div className="bg-purple-50 p-4 md:p-6 rounded border border-purple-100">
-                <div className="flex items-center gap-1 text-xs md:text-sm text-purple-600 mb-2">
+              <div className="bg-white border border-gray-200 p-4 md:p-6 rounded-lg">
+                <div className="flex items-center gap-1 text-xs md:text-sm text-gray-600 mb-2 font-medium">
                   <Calendar size={13} />
                   <span>This Month</span>
                 </div>
-                <div className="text-xl md:text-2xl font-bold text-purple-700">{stats.countThisMonth} invoices</div>
-                <div className="text-sm font-semibold text-purple-500 mt-1">GHS {stats.revenueThisMonth.toFixed(2)}</div>
+                <div className="text-xl md:text-2xl font-bold text-gray-900">{stats.countThisMonth} invoices</div>
+                <div className="text-sm font-semibold text-gray-700 mt-1">GHS {stats.revenueThisMonth.toFixed(2)}</div>
               </div>
             </div>
 
@@ -979,7 +984,7 @@ const InvoiceGenerator = () => {
                     placeholder="Search by invoice # or client"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none transition"
+                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:border-gray-900 focus:outline-none transition"
                   />
                   {searchQuery && (
                     <button
@@ -1003,9 +1008,9 @@ const InvoiceGenerator = () => {
                         <div className="text-xs text-gray-500 mt-1">{formatDate(inv.invoiceDate)}</div>
                       </div>
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        inv.status === 'PAID' ? 'bg-green-100 text-green-800' :
-                        inv.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-orange-100 text-orange-800'
+                        inv.status === 'PAID' ? 'bg-gray-100 text-gray-900' :
+                        inv.status === 'PENDING' ? 'bg-gray-100 text-gray-700' :
+                        'bg-gray-100 text-gray-700'
                       }`}>
                         {inv.status}
                       </span>
@@ -1021,20 +1026,20 @@ const InvoiceGenerator = () => {
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      <button onClick={() => editInvoice(inv)} className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-xs font-medium flex items-center gap-1">
+                      <button onClick={() => editInvoice(inv)} className="bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition text-xs font-medium flex items-center gap-1">
                         <Edit2 size={14} /> Edit
                       </button>
                       {inv.status !== 'PAID' && inv.balance > 0 && (
-                        <button onClick={() => openPaymentModal(inv)} className="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 transition text-xs font-medium flex items-center gap-1">
+                        <button onClick={() => openPaymentModal(inv)} className="bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition text-xs font-medium flex items-center gap-1">
                           <DollarSign size={14} /> Payment
                         </button>
                       )}
                       {(inv.status === 'PAID' || inv.paid > 0) && (
-                        <button onClick={() => generateReceipt(inv)} className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition text-xs font-medium flex items-center gap-1">
+                        <button onClick={() => generateReceipt(inv)} className="bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition text-xs font-medium flex items-center gap-1">
                           <Receipt size={14} /> Receipt
                         </button>
                       )}
-                      <button onClick={() => deleteInvoice(inv.id)} className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition text-xs font-medium flex items-center gap-1">
+                      <button onClick={() => deleteInvoice(inv.id)} className="bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition text-xs font-medium flex items-center gap-1">
                         <Trash2 size={14} /> Delete
                       </button>
                     </div>
@@ -1048,48 +1053,48 @@ const InvoiceGenerator = () => {
               </div>
 
               {/* Desktop Table */}
-              <div className="hidden md:block bg-gray-50 rounded-lg overflow-x-auto shadow-sm">
+              <div className="hidden md:block bg-white border border-gray-200 rounded-lg overflow-x-auto shadow-sm">
                 <table className="w-full min-w-full">
-                  <thead className="bg-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left p-3 md:p-4 text-sm md:text-base">Invoice #</th>
-                      <th className="text-left p-3 md:p-4 text-sm md:text-base">Date</th>
-                      <th className="text-left p-3 md:p-4 text-sm md:text-base">Client</th>
-                      <th className="text-right p-3 md:p-4 text-sm md:text-base">Total</th>
-                      <th className="text-right p-3 md:p-4 text-sm md:text-base">Balance</th>
-                      <th className="text-center p-3 md:p-4 text-sm md:text-base">Status</th>
-                      <th className="text-center p-3 md:p-4 text-sm md:text-base">Actions</th>
+                      <th className="text-left p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Invoice #</th>
+                      <th className="text-left p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Date</th>
+                      <th className="text-left p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Client</th>
+                      <th className="text-right p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Total</th>
+                      <th className="text-right p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Balance</th>
+                      <th className="text-center p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Status</th>
+                      <th className="text-center p-3 md:p-4 text-sm md:text-base font-semibold text-gray-900">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInvoices.map((inv) => (
                       <tr key={inv.id} className="border-t border-gray-200">
-                        <td className="p-3 md:p-4 text-sm md:text-base">{inv.invoiceNumber}</td>
-                        <td className="p-3 md:p-4 text-sm md:text-base">{formatDate(inv.invoiceDate)}</td>
-                        <td className="p-3 md:p-4 text-sm md:text-base">{inv.clientName || 'N/A'}</td>
-                        <td className="text-right p-3 md:p-4 text-sm md:text-base">GHS {Number(inv.total).toFixed(2)}</td>
-                        <td className="text-right p-3 md:p-4 text-sm md:text-base">GHS {Number(inv.balance).toFixed(2)}</td>
+                        <td className="p-3 md:p-4 text-sm md:text-base text-gray-900">{inv.invoiceNumber}</td>
+                        <td className="p-3 md:p-4 text-sm md:text-base text-gray-700">{formatDate(inv.invoiceDate)}</td>
+                        <td className="p-3 md:p-4 text-sm md:text-base text-gray-900">{inv.clientName || 'N/A'}</td>
+                        <td className="text-right p-3 md:p-4 text-sm md:text-base text-gray-900 font-medium">GHS {Number(inv.total).toFixed(2)}</td>
+                        <td className="text-right p-3 md:p-4 text-sm md:text-base text-gray-900 font-medium">GHS {Number(inv.balance).toFixed(2)}</td>
                         <td className="text-center p-3 md:p-4">
-                          <span className={`px-2 md:px-3 py-1 rounded text-xs md:text-sm ${
-                            inv.status === 'PAID' ? 'bg-green-100 text-green-800' :
-                            inv.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-orange-100 text-orange-800'
+                          <span className={`px-2 md:px-3 py-1 rounded text-xs md:text-sm font-medium ${
+                            inv.status === 'PAID' ? 'bg-gray-100 text-gray-900' :
+                            inv.status === 'PENDING' ? 'bg-gray-100 text-gray-700' :
+                            'bg-gray-100 text-gray-700'
                           }`}>
                             {inv.status}
                           </span>
                         </td>
                         <td className="text-center p-3 md:p-4">
                           <div className="flex gap-2 justify-center flex-wrap">
-                            <button onClick={() => editInvoice(inv)} className="bg-blue-500 text-white p-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm" title="Edit Invoice">
+                            <button onClick={() => editInvoice(inv)} className="bg-gray-900 text-white p-2.5 rounded-lg hover:bg-gray-800 transition shadow-sm" title="Edit Invoice">
                               <Edit2 size={18} />
                             </button>
                             {inv.status !== 'PAID' && inv.balance > 0 && (
-                              <button onClick={() => openPaymentModal(inv)} className="bg-yellow-500 text-white p-2.5 rounded-lg hover:bg-yellow-600 transition shadow-sm" title="Record Part Payment">
+                              <button onClick={() => openPaymentModal(inv)} className="bg-gray-900 text-white p-2.5 rounded-lg hover:bg-gray-800 transition shadow-sm" title="Record Part Payment">
                                 <DollarSign size={18} />
                               </button>
                             )}
                             {(inv.status === 'PAID' || inv.paid > 0) && (
-                              <button onClick={() => generateReceipt(inv)} className="bg-green-500 text-white p-2.5 rounded-lg hover:bg-green-600 transition shadow-sm" title={inv.status === 'PAID' ? 'Generate Full Receipt' : 'Generate Payment Summary Receipt'}>
+                              <button onClick={() => generateReceipt(inv)} className="bg-gray-900 text-white p-2.5 rounded-lg hover:bg-gray-800 transition shadow-sm" title={inv.status === 'PAID' ? 'Generate Full Receipt' : 'Generate Payment Summary Receipt'}>
                                 <Receipt size={18} />
                               </button>
                             )}
@@ -1099,13 +1104,13 @@ const InvoiceGenerator = () => {
                                   const lastPayment = inv.paymentHistory[inv.paymentHistory.length - 1];
                                   generateReceipt(inv, lastPayment);
                                 }}
-                                className="bg-purple-500 text-white p-2.5 rounded-lg hover:bg-purple-600 transition shadow-sm"
+                                className="bg-gray-900 text-white p-2.5 rounded-lg hover:bg-gray-800 transition shadow-sm"
                                 title="Generate Last Payment Receipt"
                               >
                                 <Receipt size={18} />
                               </button>
                             )}
-                            <button onClick={() => deleteInvoice(inv.id)} className="bg-red-500 text-white p-2.5 rounded-lg hover:bg-red-600 transition shadow-sm" title="Delete Invoice">
+                            <button onClick={() => deleteInvoice(inv.id)} className="bg-gray-900 text-white p-2.5 rounded-lg hover:bg-gray-800 transition shadow-sm" title="Delete Invoice">
                               <Trash2 size={18} />
                             </button>
                           </div>
@@ -1115,7 +1120,7 @@ const InvoiceGenerator = () => {
                   </tbody>
                 </table>
                 {filteredInvoices.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-600">
                     {searchQuery ? 'No invoices match your search.' : 'No invoices found. Create your first invoice to get started!'}
                   </div>
                 )}
@@ -1127,7 +1132,7 @@ const InvoiceGenerator = () => {
         {/* ─── CREATE / EDIT VIEW ─── */}
         {currentView === 'create' && (
           <>
-            <div className="no-print mb-4 bg-white p-4 md:p-6 rounded-lg shadow-sm">
+            <div className="no-print mb-4 bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-sm border border-gray-200/50">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-3">
                 <div>
                   <h1 className="text-xl md:text-2xl font-bold text-gray-900">
@@ -1136,7 +1141,7 @@ const InvoiceGenerator = () => {
                   <p className="text-sm text-gray-500 mt-1">{invoiceData.invoiceNumber}</p>
                 </div>
                 {editingInvoiceId && (
-                  <button onClick={cancelEdit} className="bg-gray-500 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 font-medium transition">
+                  <button onClick={cancelEdit} className="bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition">
                     <X size={18} /> Cancel
                   </button>
                 )}
@@ -1146,11 +1151,11 @@ const InvoiceGenerator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">Client Name *</label>
-                    <input type="text" placeholder="Client Name" value={invoiceData.clientName} onChange={(e) => setInvoiceData({ ...invoiceData, clientName: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" />
+                    <input type="text" placeholder="Client Name" value={invoiceData.clientName} onChange={(e) => setInvoiceData({ ...invoiceData, clientName: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">Invoice Date</label>
-                    <input type="date" value={invoiceData.invoiceDate} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceDate: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition md:max-w-none" style={{ maxWidth: '100%' }} />
+                    <input type="date" value={invoiceData.invoiceDate} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceDate: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition md:max-w-none" style={{ maxWidth: '100%' }} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">Status</label>
@@ -1165,11 +1170,11 @@ const InvoiceGenerator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">Client Address (optional)</label>
-                    <input type="text" placeholder="Address, City" value={`${invoiceData.clientAddress}${invoiceData.clientAddress && invoiceData.clientCity ? ', ' : ''}${invoiceData.clientCity}`} onChange={(e) => { const parts = e.target.value.split(',').map(s => s.trim()); setInvoiceData({ ...invoiceData, clientAddress: parts[0] || '', clientCity: parts.slice(1).join(', ') || '' }); }} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" />
+                    <input type="text" placeholder="Address, City" value={`${invoiceData.clientAddress}${invoiceData.clientAddress && invoiceData.clientCity ? ', ' : ''}${invoiceData.clientCity}`} onChange={(e) => { const parts = e.target.value.split(',').map(s => s.trim()); setInvoiceData({ ...invoiceData, clientAddress: parts[0] || '', clientCity: parts.slice(1).join(', ') || '' }); }} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">Payment Method *</label>
-                    <input type="text" placeholder="e.g., Mobile Money, Bank Transfer" value={invoiceData.paymentMethod} onChange={(e) => setInvoiceData({ ...invoiceData, paymentMethod: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" />
+                    <input type="text" placeholder="e.g., Mobile Money, Bank Transfer" value={invoiceData.paymentMethod} onChange={(e) => setInvoiceData({ ...invoiceData, paymentMethod: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" />
                   </div>
                 </div>
 
@@ -1180,7 +1185,7 @@ const InvoiceGenerator = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700">Payment Link (optional)</label>
-                    <input type="text" placeholder="Payment link URL" value={invoiceData.paymentLink} onChange={(e) => setInvoiceData({ ...invoiceData, paymentLink: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" />
+                    <input type="text" placeholder="Payment link URL" value={invoiceData.paymentLink} onChange={(e) => setInvoiceData({ ...invoiceData, paymentLink: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" />
                   </div>
                 </div>
               </div>
@@ -1188,7 +1193,7 @@ const InvoiceGenerator = () => {
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-semibold text-lg text-gray-900">Services</h3>
-                  <button onClick={addService} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 text-sm font-medium transition shadow-sm">
+                  <button onClick={addService} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2.5 rounded-lg hover:bg-gray-800 text-sm font-medium transition shadow-sm">
                     <Plus size={18} /> Add Service
                   </button>
                 </div>
@@ -1212,26 +1217,26 @@ const InvoiceGenerator = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Discount</label>
-                  <input type="number" value={invoiceData.discount} onChange={(e) => setInvoiceData({ ...invoiceData, discount: parseFloat(e.target.value) || 0 })} className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" placeholder="0" />
+                  <input type="number" value={invoiceData.discount} onChange={(e) => setInvoiceData({ ...invoiceData, discount: parseFloat(e.target.value) || 0 })} className="w-full border border-gray-300 px-4 py-2.5 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" placeholder="0" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Tax</label>
-                  <input type="number" value={invoiceData.tax} onChange={(e) => setInvoiceData({ ...invoiceData, tax: parseFloat(e.target.value) || 0 })} className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" placeholder="0" />
+                  <input type="number" value={invoiceData.tax} onChange={(e) => setInvoiceData({ ...invoiceData, tax: parseFloat(e.target.value) || 0 })} className="w-full border border-gray-300 px-4 py-2.5 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" placeholder="0" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Paid</label>
-                  <input type="number" value={invoiceData.paid} onChange={(e) => setInvoiceData({ ...invoiceData, paid: parseFloat(e.target.value) || 0 })} className="w-full border-2 border-gray-300 px-4 py-2.5 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" placeholder="0" />
+                  <input type="number" value={invoiceData.paid} onChange={(e) => setInvoiceData({ ...invoiceData, paid: parseFloat(e.target.value) || 0 })} className="w-full border border-gray-300 px-4 py-2.5 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" placeholder="0" />
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <button onClick={saveInvoice} className="flex-1 bg-blue-500 text-white py-3.5 rounded-lg hover:bg-blue-600 text-base font-medium transition shadow-sm">
+                <button onClick={saveInvoice} className="flex-1 bg-gray-900 text-white py-3.5 rounded-lg hover:bg-gray-800 text-base font-medium transition shadow-sm">
                   {editingInvoiceId ? 'Update Invoice' : 'Save Invoice'}
                 </button>
-                <button onClick={exportToPDF} className="flex-1 bg-green-500 text-white py-3.5 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm">
+                <button onClick={exportToPDF} className="flex-1 bg-gray-900 text-white py-3.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm">
                   <Download size={20} /> Export to PDF
                 </button>
                 {(invoiceData.status === 'PAID' || invoiceData.paid > 0) && (
@@ -1247,7 +1252,7 @@ const InvoiceGenerator = () => {
                       };
                       generateReceipt(currentInvoice);
                     }}
-                    className="flex-1 bg-purple-500 text-white py-3.5 rounded-lg hover:bg-purple-600 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm"
+                    className="flex-1 bg-gray-900 text-white py-3.5 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm"
                   >
                     <Receipt size={20} /> Generate Receipt
                   </button>
@@ -1367,45 +1372,45 @@ const InvoiceGenerator = () => {
 
         {/* Payment Modal */}
         {showPaymentModal && selectedInvoiceForPayment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto border border-gray-200">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Record Part Payment</h2>
+                <h2 className="text-xl font-bold text-gray-900">Record Part Payment</h2>
                 <button onClick={closePaymentModal} className="text-gray-500 hover:text-gray-700"><X size={24} /></button>
               </div>
 
-              <div className="mb-4 p-3 bg-gray-50 rounded">
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="text-sm text-gray-600 mb-1">Invoice: {selectedInvoiceForPayment.invoiceNumber}</div>
                 <div className="text-sm text-gray-600 mb-1">Client: {selectedInvoiceForPayment.clientName}</div>
-                <div className="text-sm font-semibold">Total: GHS {selectedInvoiceForPayment.total.toFixed(2)}</div>
-                <div className="text-sm font-semibold">Paid: GHS {(selectedInvoiceForPayment.paid || 0).toFixed(2)}</div>
-                <div className="text-sm font-semibold text-orange-600">
+                <div className="text-sm font-semibold text-gray-900">Total: GHS {selectedInvoiceForPayment.total.toFixed(2)}</div>
+                <div className="text-sm font-semibold text-gray-900">Paid: GHS {(selectedInvoiceForPayment.paid || 0).toFixed(2)}</div>
+                <div className="text-sm font-semibold text-gray-900">
                   Balance: GHS {(selectedInvoiceForPayment.balance || (selectedInvoiceForPayment.total - (selectedInvoiceForPayment.paid || 0))).toFixed(2)}
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Payment Amount (GHS)</label>
-                  <input type="number" step="0.01" min="0.01" max={selectedInvoiceForPayment.balance || (selectedInvoiceForPayment.total - (selectedInvoiceForPayment.paid || 0))} value={paymentData.amount} onChange={(e) => setPaymentData({ ...paymentData, amount: parseFloat(e.target.value) || 0 })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" placeholder="Enter payment amount" />
+                  <label className="block text-sm font-medium mb-1 text-gray-900">Payment Amount (GHS)</label>
+                  <input type="number" step="0.01" min="0.01" max={selectedInvoiceForPayment.balance || (selectedInvoiceForPayment.total - (selectedInvoiceForPayment.paid || 0))} value={paymentData.amount} onChange={(e) => setPaymentData({ ...paymentData, amount: parseFloat(e.target.value) || 0 })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" placeholder="Enter payment amount" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Payment Method</label>
-                  <input type="text" value={paymentData.paymentMethod} onChange={(e) => setPaymentData({ ...paymentData, paymentMethod: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" placeholder="e.g., Mobile Money, Bank Transfer, Cash" />
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Payment Method</label>
+                  <input type="text" value={paymentData.paymentMethod} onChange={(e) => setPaymentData({ ...paymentData, paymentMethod: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" placeholder="e.g., Mobile Money, Bank Transfer, Cash" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Payment Date</label>
-                  <input type="date" value={paymentData.paymentDate} onChange={(e) => setPaymentData({ ...paymentData, paymentDate: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" />
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Payment Date</label>
+                  <input type="date" value={paymentData.paymentDate} onChange={(e) => setPaymentData({ ...paymentData, paymentDate: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Notes (Optional)</label>
-                  <textarea value={paymentData.notes} onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })} className="w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition" rows="3" placeholder="Additional notes about this payment" />
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Notes (Optional)</label>
+                  <textarea value={paymentData.notes} onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })} className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base bg-white focus:border-gray-900 focus:outline-none transition" rows="3" placeholder="Additional notes about this payment" />
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <button onClick={closePaymentModal} className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 font-medium transition shadow-sm">Cancel</button>
-                <button onClick={recordPartPayment} className="flex-1 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 font-medium transition shadow-sm">
+                <button onClick={closePaymentModal} className="flex-1 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 font-medium transition shadow-sm">Cancel</button>
+                <button onClick={recordPartPayment} className="flex-1 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 flex items-center justify-center gap-2 font-medium transition shadow-sm">
                   <Receipt size={18} /> Record Payment & Generate Receipt
                 </button>
               </div>
