@@ -764,7 +764,9 @@ const InvoiceGenerator = () => {
   };
 
   const formatDate = (dateString) => {
+    if (dateString == null || dateString === '') return '—';
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '—';
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
   };
 
@@ -1253,11 +1255,11 @@ const InvoiceGenerator = () => {
                     <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
                       <div>
                         <div className="text-gray-600 text-xs">Total</div>
-                        <div className="font-semibold text-gray-900">GHS {inv.total.toFixed(2)}</div>
+                        <div className="font-semibold text-gray-900">GHS {(Number(inv.total) || 0).toFixed(2)}</div>
                       </div>
                       <div>
                         <div className="text-gray-600 text-xs">Balance</div>
-                        <div className="font-semibold text-gray-900">GHS {inv.balance.toFixed(2)}</div>
+                        <div className="font-semibold text-gray-900">GHS {(Number(inv.balance) ?? (Number(inv.total) || 0) - (Number(inv.paid) || 0)).toFixed(2)}</div>
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
@@ -1320,13 +1322,13 @@ const InvoiceGenerator = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {invoices.slice().reverse().map((inv, index) => (
+                    {filteredStatsInvoices.slice().reverse().map((inv, index) => (
                       <tr key={inv.id} className="border-t border-gray-200">
-                        <td className="p-3 md:p-4 text-sm md:text-base">{inv.invoiceNumber}</td>
+                        <td className="p-3 md:p-4 text-sm md:text-base">{inv.invoiceNumber ?? '—'}</td>
                         <td className="p-3 md:p-4 text-sm md:text-base">{formatDate(inv.invoiceDate)}</td>
                         <td className="p-3 md:p-4 text-sm md:text-base">{inv.clientName || 'N/A'}</td>
-                        <td className="text-right p-3 md:p-4 text-sm md:text-base">GHS {inv.total.toFixed(2)}</td>
-                        <td className="text-right p-3 md:p-4 text-sm md:text-base">GHS {inv.balance.toFixed(2)}</td>
+                        <td className="text-right p-3 md:p-4 text-sm md:text-base">GHS {(Number(inv.total) || 0).toFixed(2)}</td>
+                        <td className="text-right p-3 md:p-4 text-sm md:text-base">GHS {(Number(inv.balance) ?? (Number(inv.total) || 0) - (Number(inv.paid) || 0)).toFixed(2)}</td>
                         <td className="text-center p-3 md:p-4">
                           <span className="px-2 md:px-3 py-1 rounded text-xs md:text-sm bg-[#F9F8F6] text-gray-800 border border-gray-200">
                             {inv.status}
