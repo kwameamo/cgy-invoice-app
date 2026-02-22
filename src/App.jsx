@@ -8,28 +8,41 @@ import CGYContractManager from './contracts';
 /* ─── Mode switcher: Invoice Generator ⟷ Contract Generator (shown in header after login) ─── */
 function ModeSwitcher({ mode, onModeChange }) {
   return (
-    <div className="mode-switcher" data-active={mode} role="tablist" aria-label="Switch between Invoice and Contract">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={mode === 'invoice'}
-        onClick={() => onModeChange('invoice')}
-        className={`mode-switcher-tab ${mode === 'invoice' ? 'active' : ''}`}
-      >
-        <FileText size={18} aria-hidden />
-        <span>Invoices</span>
-      </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={mode === 'contract'}
-        onClick={() => onModeChange('contract')}
-        className={`mode-switcher-tab ${mode === 'contract' ? 'active' : ''}`}
-      >
-        <FileSignature size={18} aria-hidden />
-        <span>Contracts</span>
-      </button>
-      <div className="mode-switcher-pill" aria-hidden />
+    <div style={{
+      display: "flex",
+      background: "#f3f4f6",
+      borderRadius: 10,
+      padding: 3,
+      gap: 2,
+    }}>
+      {[
+        { key: "invoice", icon: <FileText size={15} />, label: "Invoices" },
+        { key: "contract", icon: <FileSignature size={15} />, label: "Contracts" },
+      ].map(({ key, icon, label }) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => onModeChange(key)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "7px 14px",
+            borderRadius: 7,
+            border: "none",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.18s ease",
+            background: mode === key ? "#ffffff" : "transparent",
+            color: mode === key ? "#111827" : "#6b7280",
+            boxShadow: mode === key ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+          }}
+        >
+          {icon}
+          {label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -1469,9 +1482,22 @@ function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 ml-auto"
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "7px 14px",
+              borderRadius: 8,
+              border: "1.5px solid #fee2e2",
+              background: "transparent",
+              color: "#ef4444",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
-            <LogOut size={18} /> Logout
+            <LogOut size={15} /> Logout
           </button>
         </div>
       </header>
@@ -1483,8 +1509,8 @@ function App() {
           </div>
         )}
         {mode === 'contract' && (
-          <div className="view-panel view-panel-contract dot-grid-background main-content-frame">
-            <CGYContractManager matchInvoiceUI />
+          <div className="view-panel view-panel-contract">
+            <CGYContractManager />
           </div>
         )}
       </main>

@@ -1,26 +1,51 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
-  Plus, Trash2, Download, FileText, LogOut, Edit2, X,
-  CheckCircle, AlertCircle, Info, Search, Eye, Copy,
-  Briefcase, Scissors, BarChart3, ChevronDown, ChevronUp,
-  Shield, Clock, DollarSign, User, Building, Calendar,
-  Printer, RefreshCw, Send, Check
+  Plus, Trash2, Download, FileText, Edit2, X,
+  CheckCircle, AlertCircle, Info, Search,
+  Briefcase, Scissors, BarChart3,
+  Check, Eye, Copy, User, Calendar, DollarSign, Receipt
 } from "lucide-react";
-import logoUrl from "./assets/cgy_logo_new.png";
 
 /* ─────────────────────────────────────────────
-   DESIGN SYSTEM — CGY Brand
-   Black / Red (#CC2222) / Gold (#B8860B)
+   Logo
 ───────────────────────────────────────────── */
-const BRAND = {
-  red: "#CC2222",
-  gold: "#B8860B",
-  black: "#111111",
-  darkGray: "#1e1e1e",
-  midGray: "#555",
-  lightGray: "#f4f4f4",
-  white: "#ffffff",
+import logoUrl from "./assets/cgy_logo_new.png";
+import signUrl from "./assets/sign.png";
+
+// Convert imported asset to base64 for use in printed windows
+const getBase64Logo = () => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => resolve(null);
+    img.src = logoUrl;
+  });
 };
+
+const getBase64Sign = () => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => resolve(null);
+    img.src = signUrl;
+  });
+};
+
+
 
 /* ─────────────────────────────────────────────
    CONTRACT TEMPLATES
@@ -43,30 +68,30 @@ const MERCH_DESIGN_SERVICES = [
 
 const STATUSES = ["DRAFT", "SENT", "SIGNED", "ACTIVE", "COMPLETED", "CANCELLED"];
 
-const STATUS_COLORS = {
-  DRAFT: { bg: "#f3f4f6", text: "#6b7280", border: "#d1d5db" },
-  SENT: { bg: "#eff6ff", text: "#3b82f6", border: "#93c5fd" },
-  SIGNED: { bg: "#f0fdf4", text: "#16a34a", border: "#86efac" },
-  ACTIVE: { bg: "#fefce8", text: "#ca8a04", border: "#fde047" },
-  COMPLETED: { bg: "#f0fdf4", text: "#15803d", border: "#4ade80" },
-  CANCELLED: { bg: "#fef2f2", text: "#dc2626", border: "#fca5a5" },
+const STATUS_STYLES = {
+  DRAFT:     "bg-gray-100 text-gray-700",
+  SENT:      "bg-blue-100 text-blue-800",
+  SIGNED:    "bg-green-100 text-green-800",
+  ACTIVE:    "bg-yellow-100 text-yellow-800",
+  COMPLETED: "bg-green-100 text-green-700",
+  CANCELLED: "bg-red-100 text-red-700",
 };
 
 const CONTRACT_TYPES = {
-  graphic: { label: "Graphic Design & Branding", color: BRAND.red, services: GRAPHIC_DESIGN_SERVICES },
-  merch: { label: "Clothing & Merch Design", color: BRAND.gold, services: MERCH_DESIGN_SERVICES },
+  graphic: { label: "Graphic Design & Branding", services: GRAPHIC_DESIGN_SERVICES, color: "#CC2222", bgClass: "bg-red-50", textClass: "text-red-600" },
+  merch:   { label: "Clothing & Merch Design",   services: MERCH_DESIGN_SERVICES,   color: "#B8860B", bgClass: "bg-amber-50", textClass: "text-amber-700" },
 };
 
 /* ─────────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────────── */
 const today = () => new Date().toISOString().split("T")[0];
+const uid   = () => `ctr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+const pad   = (n) => String(n).padStart(3, "0");
 const fmtDate = (d) => {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" });
 };
-const uid = () => `ctr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-const pad = (n) => String(n).padStart(3, "0");
 
 const blankContract = (counter, type = "graphic") => ({
   id: uid(),
@@ -76,18 +101,15 @@ const blankContract = (counter, type = "graphic") => ({
   contractDate: today(),
   startDate: today(),
   endDate: "",
-  // Designer
   designerName: "Curio Graphics Yard",
   designerEmail: "curiographicsyard@gmail.com",
   designerPhone: "",
   designerAddress: "Koforidua, E7-0979-957, Ghana",
-  // Client
   clientName: "",
   clientCompany: "",
   clientEmail: "",
   clientPhone: "",
   clientAddress: "",
-  // Project
   projectTitle: "",
   servicesSelected: [],
   customServices: "",
@@ -98,25 +120,22 @@ const blankContract = (counter, type = "graphic") => ({
   revisionsIncluded: 2,
   revisionRate: 150,
   rushFeePercent: 20,
-  // Payment
   paymentAccount: "0200044821",
   paymentInstitution: "Telecel",
   paymentBeneficiary: "David Amo",
-  // IP
   licenseType: "Non-exclusive commercial",
   exclusivity: false,
   portfolioRights: true,
   sourceFilesIncluded: false,
   sourceFilesFee: "",
-  // Notes
   specialRequirements: "",
   savedDate: "",
 });
 
 /* ─────────────────────────────────────────────
-   PDF PRINT GENERATOR (DM Serif / DM Sans kept for generated contract)
+   PDF GENERATOR
 ───────────────────────────────────────────── */
-const generateContractPDF = (contract, logoSrc = logoUrl) => {
+const generateContractPDF = async (contract) => {
   const typeInfo = CONTRACT_TYPES[contract.type];
   const accentColor = typeInfo.color;
   const depositAmt = contract.agreedAmount
@@ -126,9 +145,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
     ? ((parseFloat(contract.agreedAmount) * (100 - contract.depositPercent)) / 100).toFixed(2)
     : "—";
 
-  const selectedServiceLabels = contract.servicesSelected
-    .map((s) => `<li>${s}</li>`)
-    .join("");
+    const [base64Logo, base64Sign] = await Promise.all([getBase64Logo(), getBase64Sign()]);
 
   const win = window.open("", "_blank");
   win.document.write(`<!DOCTYPE html>
@@ -137,25 +154,21 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   <meta charset="UTF-8">
   <title>Contract ${contract.contractNumber}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap'),
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&family=Meow+Script&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; font-size: 11pt; color: #222; line-height: 1.65; padding: 0; }
     .page { max-width: 760px; margin: 0 auto; padding: 48px 52px; }
-    /* Header */
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 4px solid ${accentColor}; }
-    .brand-logo { height: 48px; width: auto; display: block; object-fit: contain; }
     .contract-badge { text-align: right; }
     .contract-type { font-size: 11pt; font-weight: 700; color: ${accentColor}; text-transform: uppercase; letter-spacing: 0.06em; }
     .contract-num { font-size: 9pt; color: #888; margin-top: 4px; }
     .contract-date { font-size: 9pt; color: #888; }
-    /* Alert banner */
     .legal-banner { background: #111; color: #fff; text-align: center; padding: 10px 16px; font-size: 9pt; letter-spacing: 0.04em; margin-bottom: 28px; border-radius: 3px; }
-    /* Sections */
     h2 { font-family: 'DM Serif Display', serif; font-size: 14pt; color: ${accentColor}; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid ${accentColor}33; }
     h3 { font-size: 10.5pt; font-weight: 700; color: #222; margin: 16px 0 6px; }
     p, li { margin-bottom: 6px; }
     ul { padding-left: 20px; margin-bottom: 8px; }
-    /* Info grid */
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; margin-bottom: 18px; }
     .info-cell { padding: 8px 12px; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
     .info-cell:nth-child(even) { border-right: none; }
@@ -163,35 +176,27 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
     .info-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 2px; }
     .info-val { font-size: 10pt; font-weight: 600; color: #111; }
     .full-cell { grid-column: 1 / -1; border-right: none; }
-    /* Rates table */
     table { width: 100%; border-collapse: collapse; margin: 12px 0; }
     th { background: #111; color: #fff; padding: 8px 12px; text-align: left; font-size: 9pt; font-weight: 600; letter-spacing: 0.04em; }
     td { padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 10pt; }
     tr:nth-child(even) td { background: #fafafa; }
-    /* Payment boxes */
     .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
     .pay-box { border: 1.5px solid ${accentColor}; border-radius: 4px; padding: 12px 14px; }
     .pay-label { font-size: 8pt; font-weight: 700; color: ${accentColor}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
     .pay-amount { font-family: 'DM Serif Display', serif; font-size: 16pt; color: #111; }
     .pay-note { font-size: 8.5pt; color: #666; margin-top: 2px; }
-    /* Kill fee table */
     .kill-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
     .kill-table th { background: #f5f5f5; color: #333; font-size: 9pt; }
     .kill-table td { font-size: 9.5pt; }
-    /* IP badges */
     .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
     .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 8.5pt; font-weight: 600; }
     .badge-yes { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
     .badge-no { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
-    /* Signature block */
     .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 20px; }
-    .sig-party { }
     .sig-party-label { font-size: 9pt; font-weight: 700; color: ${accentColor}; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
     .sig-line { border-bottom: 1.5px solid #333; margin-bottom: 5px; height: 36px; }
     .sig-field-label { font-size: 8pt; color: #888; margin-bottom: 12px; }
-    /* Footer */
     .footer { margin-top: 36px; padding-top: 16px; border-top: 2px solid ${accentColor}; text-align: center; font-size: 8.5pt; color: #888; }
-    /* Warning box */
     .warn-box { background: #fff8f0; border: 1.5px solid ${accentColor}66; border-radius: 4px; padding: 10px 14px; margin: 12px 0; font-size: 9.5pt; color: #7c3a00; }
     @media print {
       body { padding: 0; }
@@ -205,7 +210,10 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   <!-- HEADER -->
   <div class="header">
     <div>
-      <img src="${logoSrc}" alt="Curio Graphics Yard" class="brand-logo" />
+      ${base64Logo
+        ? `<img src="${base64Logo}" alt="Curio Graphics Yard" style="height:52px;width:auto;display:block;object-fit:contain;" />`
+        : `<div style="font-family:'DM Serif Display',serif;font-size:28pt;color:#CC2222;line-height:1;">CGY</div><div style="font-size:9pt;color:#666;margin-top:4px;letter-spacing:0.08em;text-transform:uppercase;">Curio Graphics Yard</div>`
+      }
     </div>
     <div class="contract-badge">
       <div class="contract-type">${typeInfo.label}</div>
@@ -216,7 +224,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
 
   <div class="legal-banner">⚖ This is a legally binding agreement. Both parties must read all terms before signing.</div>
 
-  <!-- PARTIES -->
+  <!-- 1. PARTIES -->
   <h2>1. Parties & Project Overview</h2>
   <div class="info-grid">
     <div class="info-cell"><div class="info-label">Designer / Studio</div><div class="info-val">Curio Graphics Yard (CGY)</div></div>
@@ -233,18 +241,17 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
     <div class="info-cell"><div class="info-label">Estimated End Date</div><div class="info-val">${contract.endDate ? fmtDate(contract.endDate) : "TBD"}</div></div>
   </div>
 
-  <!-- SERVICES -->
+  <!-- 2. SERVICES -->
   <h2>2. Services Selected & Agreed Rates</h2>
   ${contract.servicesSelected.length > 0 ? `
   <table>
     <thead><tr><th>Service</th><th>Rate (GHS)</th><th>Rate (USD Eq.)</th></tr></thead>
     <tbody>
       ${typeInfo.services.filter(s => contract.servicesSelected.includes(s.label)).map(s => `
-      <tr><td>${s.label}</td><td>GHS ${s.ghsMin.toLocaleString()} – ${s.ghsMax.toLocaleString()}</td><td>USD ${s.usdMin} – ${s.usdMax}</td></tr>`).join("")}
+      <tr><td>${s.label}</td><td>GHS ${s.ghsMin.toLocaleString()} – ${s.ghsMax.toLocaleString()}</td><td>USD ${s.usdMin || "—"} – ${s.usdMax || "—"}</td></tr>`).join("")}
     </tbody>
   </table>` : "<p>No services selected.</p>"}
   ${contract.customServices ? `<p><strong>Additional / Custom Services:</strong> ${contract.customServices}</p>` : ""}
-
   <div class="info-grid" style="margin-top:12px">
     <div class="info-cell"><div class="info-label">Agreed Project Rate</div><div class="info-val">${contract.currency} ${contract.agreedAmount || "—"}</div></div>
     <div class="info-cell"><div class="info-label">Currency</div><div class="info-val">${contract.currency}</div></div>
@@ -252,7 +259,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
     <div class="info-cell"><div class="info-label">Revisions Included</div><div class="info-val">${contract.revisionsIncluded} rounds</div></div>
   </div>
 
-  <!-- SCOPE -->
+  <!-- 3. SCOPE -->
   <h2>3. Scope of Work & Deliverables</h2>
   ${contract.deliverables ? `<p>${contract.deliverables.replace(/\n/g, "<br>")}</p>` : `<ul>
     <li>Deliverables as described in Section 2 services above</li>
@@ -262,7 +269,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   <div class="warn-box">⚠ Any work not explicitly listed above is considered OUT OF SCOPE and will be quoted and billed separately via written Change Order.</div>
   ${contract.specialRequirements ? `<h3>Special Requirements</h3><p>${contract.specialRequirements}</p>` : ""}
 
-  <!-- TIMELINE -->
+  <!-- 4. TIMELINE -->
   <h2>4. Project Timeline & Milestones</h2>
   <table>
     <thead><tr><th>Phase</th><th>Deliverable</th><th>Due Date</th><th>Payment Due</th></tr></thead>
@@ -276,7 +283,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   </table>
   <p style="font-size:9.5pt;color:#7c3a00;margin-top:8px">⏱ If the Client fails to respond within 5 business days of any submission, the timeline shifts forward accordingly. A Rush Fee of ${contract.rushFeePercent}% applies for urgent delivery after a Client-caused delay.</p>
 
-  <!-- REVISIONS -->
+  <!-- 5. REVISIONS -->
   <h2>5. Revision Policy</h2>
   <table>
     <thead><tr><th>Item</th><th>Terms</th></tr></thead>
@@ -288,7 +295,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   </table>
   <p>A "revision" means minor changes to an approved concept. Scrapping the direction entirely = new project. Once a design is approved in writing, that phase is <strong>closed</strong>.</p>
 
-  <!-- PAYMENT -->
+  <!-- 6. PAYMENT -->
   <h2>6. Payment Terms</h2>
   <div class="payment-grid">
     <div class="pay-box">
@@ -318,7 +325,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   </table>
   <p>Late payments after 7 days incur a holding fee of GHS 50 / USD 5 per day. Final files are withheld until full payment is confirmed.</p>
 
-  <!-- CLIENT RESPONSIBILITIES -->
+  <!-- 7. CLIENT RESPONSIBILITIES -->
   <h2>7. Client Responsibilities</h2>
   <ul>
     <li>Provide all required content (text, logos, brand assets, references) before work begins.</li>
@@ -334,7 +341,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
     <li>NOT send CGY files to manufacturers without paying the full balance first.</li>
   </ul>` : ""}
 
-  <!-- INTELLECTUAL PROPERTY -->
+  <!-- 8. INTELLECTUAL PROPERTY -->
   <h2>8. Intellectual Property & Ownership</h2>
   <div class="badge-row">
     <span class="badge ${contract.portfolioRights ? "badge-yes" : "badge-no"}">${contract.portfolioRights ? "✓" : "✗"} CGY Portfolio Rights</span>
@@ -345,7 +352,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   <p><strong>License Upon Full Payment:</strong> ${contract.licenseType} license is granted to the Client upon receipt of full payment, for the Client's brand/business use only.</p>
   ${!contract.sourceFilesIncluded ? `<p><strong>Source Files:</strong> Native/source files (.AI, .PSD, etc.) are NOT included in standard delivery${contract.sourceFilesFee ? `. They may be purchased separately at ${contract.currency} ${contract.sourceFilesFee}` : ""}.</p>` : ""}
 
-  <!-- PRODUCTION DISCLAIMER (merch only) -->
+  <!-- 9. PRODUCTION DISCLAIMER (merch only) -->
   ${contract.type === "merch" ? `
   <h2>9. Production & Printing Disclaimer</h2>
   <p>CGY provides design files only. CGY is NOT responsible for:</p>
@@ -379,7 +386,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   <h2>${contract.type === "merch" ? "12" : "11"}. Dispute Resolution & Governing Law</h2>
   <p>In the event of a dispute, both parties agree to attempt resolution through direct good-faith communication first. If unresolved within 14 days, the matter may be escalated to mediation. This Agreement is governed by the laws of <strong>Ghana</strong>.</p>
 
-  <!-- GENERAL -->
+  <!-- GENERAL PROVISIONS -->
   <h2>${contract.type === "merch" ? "13" : "12"}. General Provisions</h2>
   <ul>
     <li>This Agreement is the complete understanding between both parties, replacing all prior verbal or written discussions.</li>
@@ -394,9 +401,21 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   <div class="sig-grid">
     <div class="sig-party">
       <div class="sig-party-label">Designer — Curio Graphics Yard</div>
-      <div class="sig-line"></div><div class="sig-field-label">Signature</div>
-      <div class="sig-line"></div><div class="sig-field-label">Printed Name</div>
-      <div class="sig-line"></div><div class="sig-field-label">Date</div>
+      <div style="height:52px;margin-bottom:5px;display:flex;align-items:flex-end;">
+        ${base64Sign
+          ? `<img src="${base64Sign}" alt="Signature" style="height:65px;width:auto;object-fit:contain;" />`
+          : `<span style="font-family:'Meow Script',cursive;font-size:26pt;color:#CC2222;line-height:1;">davidAmo</span>`
+        }
+      </div>
+      <div class="sig-field-label">Signature</div>
+      <div style="height:36px;margin-bottom:5px;display:flex;align-items:center;">
+        <span style="font-size:11pt;font-weight:600;color:#111;">David Amo</span>
+      </div>
+      <div class="sig-field-label">Printed Name</div>
+      <div style="height:36px;margin-bottom:5px;display:flex;align-items:center;">
+        <span style="font-size:11pt;color:#111;">${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</span>
+      </div>
+      <div class="sig-field-label">Date</div>
     </div>
     <div class="sig-party">
       <div class="sig-party-label">Client</div>
@@ -407,7 +426,7 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
   </div>
 
   <div class="footer">
-    Curio Graphics Yard — Where Creativity Meets Professionalism.<br>
+    Curio Graphics Yard — A Creative Design Studio Amplifying Fashion and Music through Inspired Design.<br>
     Contract #${contract.contractNumber} • Both parties retain a signed copy for their records.
   </div>
 </div>
@@ -417,91 +436,25 @@ const generateContractPDF = (contract, logoSrc = logoUrl) => {
 };
 
 /* ─────────────────────────────────────────────
-   COMPONENTS
+   MAIN COMPONENT
 ───────────────────────────────────────────── */
-const Notif = ({ notif, onClose }) => {
-  if (!notif.show) return null;
-  const styles = {
-    success: "bg-green-50 border-green-200 text-green-800",
-    error: "bg-red-50 border-red-200 text-red-800",
-    info: "bg-blue-50 border-blue-200 text-blue-800",
-  };
-  const icons = { success: <CheckCircle size={16} />, error: <AlertCircle size={16} />, info: <Info size={16} /> };
-  return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
-      style={{ animation: "slideDown 0.3s ease-out" }}>
-      <div className={`rounded-lg shadow-lg p-4 flex items-start gap-3 border ${styles[notif.type]}`}>
-        {icons[notif.type]}
-        <p className="flex-1 text-sm">{notif.message}</p>
-        <button onClick={onClose}><X size={16} /></button>
-      </div>
-    </div>
-  );
-};
-
-const StatusBadge = ({ status }) => {
-  const s = STATUS_COLORS[status] || STATUS_COLORS.DRAFT;
-  return (
-    <span style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}`, padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}>
-      {status}
-    </span>
-  );
-};
-
-const Field = ({ label, required, children }) => (
-  <div>
-    <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 6, color: "#555", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-      {label}{required && <span style={{ color: BRAND.red }}> *</span>}
-    </label>
-    {children}
-  </div>
-);
-
-const Input = ({ value, onChange, placeholder, type = "text", style = {} }) => (
-  <input type={type} value={value} onChange={onChange} placeholder={placeholder}
-    style={{ width: "100%", border: "2px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 14, outline: "none", transition: "border-color 0.2s", background: "#fff", ...style }}
-    onFocus={e => e.target.style.borderColor = BRAND.red}
-    onBlur={e => e.target.style.borderColor = "#e5e7eb"}
-  />
-);
-
-const Textarea = ({ value, onChange, placeholder, rows = 3 }) => (
-  <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
-    style={{ width: "100%", border: "2px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 14, outline: "none", resize: "vertical", transition: "border-color 0.2s", fontFamily: "inherit" }}
-    onFocus={e => e.target.style.borderColor = BRAND.red}
-    onBlur={e => e.target.style.borderColor = "#e5e7eb"}
-  />
-);
-
-const Select = ({ value, onChange, children }) => (
-  <select value={value} onChange={onChange}
-    style={{ width: "100%", border: "2px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 14, outline: "none", background: "#fff", appearance: "none", cursor: "pointer" }}>
-    {children}
-  </select>
-);
-
-/* ─────────────────────────────────────────────
-   MAIN APP
-───────────────────────────────────────────── */
-export default function CGYContractManager({ matchInvoiceUI = false }) {
-  const [view, setView] = useState("dashboard");
-  const [currentView, setCurrentView] = useState("create"); // 'create' | 'stats' — when matchInvoiceUI, same as Invoice
+export default function CGYContractManager() {
+  const [currentView, setCurrentView] = useState("create");
   const [contracts, setContracts] = useState(() => {
     try { return JSON.parse(localStorage.getItem("cgy_contracts") || "[]"); } catch { return []; }
   });
   const [counter, setCounter] = useState(() => {
     try { return parseInt(localStorage.getItem("cgy_contract_counter") || "1"); } catch { return 1; }
   });
-  const [editing, setEditing] = useState(null); // contract being created/edited
-  const [notif, setNotif] = useState({ show: false, message: "", type: "info" });
-  const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [editing, setEditing] = useState(null);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "info" });
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [previewContract, setPreviewContract] = useState(null);
+  const [filterType, setFilterType] = useState("all");
 
-  const notify = useCallback((message, type = "info") => {
-    setNotif({ show: true, message, type });
-    setTimeout(() => setNotif({ show: false, message: "", type: "info" }), 4000);
+  const showNotification = useCallback((message, type = "info") => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: "", type: "info" }), 4000);
   }, []);
 
   const saveToStorage = (list, cnt) => {
@@ -509,29 +462,34 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
     localStorage.setItem("cgy_contract_counter", String(cnt));
   };
 
+  const startNew = (type) => {
+    setEditing(blankContract(counter, type));
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+  };
+
   const saveContract = () => {
-    if (!editing.clientName.trim()) return notify("Client name is required.", "error");
-    if (!editing.projectTitle.trim()) return notify("Project title is required.", "error");
-    if (!editing.agreedAmount) return notify("Agreed amount is required.", "error");
+    if (!editing.clientName.trim()) return showNotification("Client name is required.", "error");
+    if (!editing.projectTitle.trim()) return showNotification("Project title is required.", "error");
+    if (!editing.agreedAmount) return showNotification("Agreed amount is required.", "error");
 
-    const now = new Date().toISOString();
-    const updated = { ...editing, savedDate: now };
-
+    const updated = { ...editing, savedDate: new Date().toISOString() };
     let newList, newCounter = counter;
     const existing = contracts.find(c => c.id === updated.id);
     if (existing) {
       newList = contracts.map(c => c.id === updated.id ? updated : c);
-      notify("Contract updated successfully!", "success");
+      showNotification("Contract updated successfully!", "success");
     } else {
       newList = [...contracts, updated];
       newCounter = counter + 1;
       setCounter(newCounter);
-      notify("Contract saved successfully!", "success");
+      showNotification("Contract saved successfully!", "success");
     }
     setContracts(newList);
     saveToStorage(newList, newCounter);
     setEditing(null);
-    setView("dashboard");
   };
 
   const deleteContract = (id) => {
@@ -539,550 +497,647 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
     const newList = contracts.filter(c => c.id !== id);
     setContracts(newList);
     saveToStorage(newList, counter);
-    notify("Contract deleted.", "success");
+    showNotification("Contract deleted.", "success");
   };
 
   const duplicateContract = (contract) => {
-    const copy = { ...contract, id: uid(), contractNumber: `CGY-${new Date().getFullYear()}-${pad(counter)}`, status: "DRAFT", savedDate: "", contractDate: today() };
+    const copy = {
+      ...contract,
+      id: uid(),
+      contractNumber: `CGY-${new Date().getFullYear()}-${pad(counter)}`,
+      status: "DRAFT",
+      savedDate: "",
+      contractDate: today(),
+    };
     const newList = [...contracts, copy];
     const newCounter = counter + 1;
     setContracts(newList);
     setCounter(newCounter);
     saveToStorage(newList, newCounter);
-    notify("Contract duplicated!", "success");
+    showNotification("Contract duplicated!", "success");
   };
 
-  const newContract = (type) => {
-    setEditing(blankContract(counter, type));
-    setView("editor");
+  const set = (key) => (e) => setEditing(prev => ({ ...prev, [key]: e.target.value }));
+  const toggle = (key) => () => setEditing(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleService = (label) => {
+    setEditing(prev => {
+      const has = prev.servicesSelected.includes(label);
+      return { ...prev, servicesSelected: has ? prev.servicesSelected.filter(s => s !== label) : [...prev.servicesSelected, label] };
+    });
   };
 
-  const editContract = (contract) => {
-    setEditing({ ...contract });
-    setView("editor");
+  /* ── Stats ── */
+  const getStats = () => {
+    const total = contracts.length;
+    const graphic = contracts.filter(c => c.type === "graphic").length;
+    const merch = contracts.filter(c => c.type === "merch").length;
+    const signed = contracts.filter(c => ["SIGNED", "ACTIVE", "COMPLETED"].includes(c.status)).length;
+    const draft = contracts.filter(c => c.status === "DRAFT").length;
+    const totalValue = contracts.reduce((s, c) => s + (parseFloat(c.agreedAmount) || 0), 0);
+    const now = new Date();
+    const thisMonth = contracts.filter(c => {
+      const d = new Date(c.contractDate);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    return { total, graphic, merch, signed, draft, totalValue, thisMonth: thisMonth.length, thisMonthValue: thisMonth.reduce((s, c) => s + (parseFloat(c.agreedAmount) || 0), 0) };
   };
+  const stats = getStats();
 
-  // Derived
-  const filtered = contracts.filter(c => {
+  /* ── Filtered list ── */
+  const filteredContracts = contracts.slice().reverse().filter(c => {
     if (filterType !== "all" && c.type !== filterType) return false;
     if (filterStatus !== "all" && c.status !== filterStatus) return false;
-    const q = search.toLowerCase();
-    if (!q) return true;
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
     return (c.contractNumber || "").toLowerCase().includes(q) ||
       (c.clientName || "").toLowerCase().includes(q) ||
       (c.projectTitle || "").toLowerCase().includes(q);
-  }).slice().reverse();
+  });
 
-  const stats = {
-    total: contracts.length,
-    graphic: contracts.filter(c => c.type === "graphic").length,
-    merch: contracts.filter(c => c.type === "merch").length,
-    signed: contracts.filter(c => ["SIGNED", "ACTIVE", "COMPLETED"].includes(c.status)).length,
-    draft: contracts.filter(c => c.status === "DRAFT").length,
-    totalValue: contracts.reduce((s, c) => s + (parseFloat(c.agreedAmount) || 0), 0),
-  };
+  /* ── SHARED INPUT CLASSES ── */
+  const inputCls = "w-full border-2 border-gray-300 px-4 py-3 rounded-lg text-base focus:border-blue-500 focus:outline-none transition";
+  const labelCls = "block text-sm font-medium mb-2 text-gray-700";
 
-  /* ── STYLES ── */
-  const cardStyle = matchInvoiceUI ? undefined : { background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" };
-  const cardClass = matchInvoiceUI ? "bg-white rounded-lg shadow-sm p-4 md:p-6 mb-4" : "";
-  const sectionTitleClass = matchInvoiceUI ? "text-lg font-bold text-gray-900 border-b border-gray-200 pb-2 mb-4" : "";
-  const btnRed = { background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, transition: "opacity 0.2s" };
-  const btnGold = { ...btnRed, background: BRAND.gold };
-  const btnBlack = { ...btnRed, background: "#111" };
-  const btnGhost = { ...btnRed, background: "transparent", color: "#555", border: "1px solid #e5e7eb" };
-
-  /* ── EDITOR VIEW ── */
-  if (view === "editor" && editing) {
+  /* ─────────────── EDITOR ─────────────── */
+  if (editing) {
     const typeInfo = CONTRACT_TYPES[editing.type];
-    const accentColor = typeInfo.color;
-    const set = (key) => (e) => setEditing(prev => ({ ...prev, [key]: e.target.value }));
-    const toggle = (key) => () => setEditing(prev => ({ ...prev, [key]: !prev[key] }));
-    const toggleService = (label) => {
-      setEditing(prev => {
-        const has = prev.servicesSelected.includes(label);
-        return { ...prev, servicesSelected: has ? prev.servicesSelected.filter(s => s !== label) : [...prev.servicesSelected, label] };
-      });
-    };
-
-    const editorRootClass = matchInvoiceUI ? "min-h-full bg-gray-50" : "";
-    const editorRootStyle = matchInvoiceUI ? {} : { minHeight: "100vh", background: "#f8f8f8", fontFamily: "'DM Sans', sans-serif" };
-    const headerStyle = matchInvoiceUI
-      ? { background: "#fff", color: "#111", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", borderBottom: "1px solid #e5e7eb" }
-      : { background: "#111", color: "#fff", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" };
-    const headerInnerStyle = matchInvoiceUI ? { maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 } : { maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 };
-    const cancelBtnStyle = matchInvoiceUI ? { background: "transparent", color: "#6b7280", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } : { ...btnGhost, background: "transparent", color: "#aaa", border: "1px solid #333" };
-    const previewBtnStyle = matchInvoiceUI ? { background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } : { ...btnGhost, background: "transparent", color: "#aaa", border: "1px solid #333" };
-    const saveBtnStyle = matchInvoiceUI ? { background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } : { background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 };
-
     return (
-      <div className={editorRootClass} style={editorRootStyle}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); * { box-sizing: border-box; } @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }`}</style>
-        <Notif notif={notif} onClose={() => setNotif({ show: false })} />
-
-        {/* Editor Header */}
-        <div style={headerStyle}>
-          <div style={headerInnerStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              {!matchInvoiceUI && <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: BRAND.red }}>CGY</span>}
-              {!matchInvoiceUI && <div style={{ width: 1, height: 28, background: "#333" }} />}
-              <span style={{ fontSize: 13, color: matchInvoiceUI ? "#374151" : "#aaa", fontWeight: matchInvoiceUI ? 600 : 400 }}>{editing.contractNumber}</span>
-              <span style={{ fontSize: 11, background: accentColor + "22", color: accentColor, padding: "2px 10px", borderRadius: 20, fontWeight: 700 }}>{typeInfo.label}</span>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                onClick={() => { setEditing(null); setView("dashboard"); }}
-                className={matchInvoiceUI ? "flex items-center gap-2 px-4 py-2 rounded-lg font-medium border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition" : ""}
-                style={matchInvoiceUI ? undefined : cancelBtnStyle}
-              >
-                <X size={16} /> {matchInvoiceUI ? "Back to contracts" : "Cancel"}
-              </button>
-              <button onClick={() => generateContractPDF(editing)} style={previewBtnStyle}>
-                <Eye size={16} /> Preview PDF
-              </button>
-              <button onClick={saveContract} style={saveBtnStyle}>
-                <Check size={16} /> Save Contract
-              </button>
+      <div className="min-h-screen bg-gray-50 pb-20 md:pb-4">
+        {/* Notification */}
+        {notification.show && (
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4" style={{ animation: "slide-down 0.3s ease-out" }}>
+            <div className={`rounded-lg shadow-lg p-4 flex items-start gap-3 ${notification.type === "success" ? "bg-green-50 border border-green-200" : notification.type === "error" ? "bg-red-50 border border-red-200" : "bg-blue-50 border border-blue-200"}`}>
+              {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />}
+              {notification.type === "error" && <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />}
+              {notification.type === "info" && <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />}
+              <p className={`flex-1 text-sm ${notification.type === "success" ? "text-green-800" : notification.type === "error" ? "text-red-800" : "text-blue-800"}`}>{notification.message}</p>
+              <button onClick={() => setNotification({ show: false, message: "", type: "info" })} className="flex-shrink-0 text-gray-400 hover:text-gray-600"><X size={18} /></button>
             </div>
           </div>
-        </div>
+        )}
 
-        <div className={matchInvoiceUI ? "max-w-4xl mx-auto px-4 py-6 md:py-8 flex flex-col gap-6" : ""} style={matchInvoiceUI ? undefined : { maxWidth: 900, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
-
-          {/* Section: Contract Info */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Contract Details</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-              <Field label="Contract Number"><Input value={editing.contractNumber} onChange={set("contractNumber")} /></Field>
-              <Field label="Contract Date"><Input type="date" value={editing.contractDate} onChange={set("contractDate")} /></Field>
-              <Field label="Status">
-                <Select value={editing.status} onChange={set("status")}>
-                  {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                </Select>
-              </Field>
-              <Field label="Project Start Date"><Input type="date" value={editing.startDate} onChange={set("startDate")} /></Field>
-              <Field label="Estimated End Date"><Input type="date" value={editing.endDate} onChange={set("endDate")} /></Field>
-              <Field label="Currency">
-                <Select value={editing.currency} onChange={set("currency")}>
-                  <option value="GHS">GHS — Ghanaian Cedis</option>
-                  <option value="USD">USD — US Dollars</option>
-                </Select>
-              </Field>
-            </div>
-          </div>
-
-          {/* Section: Client Info */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Client Information</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Field label="Client Name" required><Input value={editing.clientName} onChange={set("clientName")} placeholder="Full name of the client" /></Field>
-              <Field label="Company / Brand Name"><Input value={editing.clientCompany} onChange={set("clientCompany")} placeholder="Business or brand name" /></Field>
-              <Field label="Client Email"><Input type="email" value={editing.clientEmail} onChange={set("clientEmail")} placeholder="client@email.com" /></Field>
-              <Field label="Client Phone"><Input value={editing.clientPhone} onChange={set("clientPhone")} placeholder="+233 ..." /></Field>
-              <Field label="Client Address" ><Input value={editing.clientAddress} onChange={set("clientAddress")} placeholder="Address, City, Country" /></Field>
-              <Field label="Project Title" required><Input value={editing.projectTitle} onChange={set("projectTitle")} placeholder="e.g., Logo Design for XYZ Brand" /></Field>
-            </div>
-          </div>
-
-          {/* Section: Services */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 16, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Services & Pricing</h3>
-            <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Select all services that apply to this contract:</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-              {typeInfo.services.map(s => {
-                const selected = editing.servicesSelected.includes(s.label);
-                return (
-                  <div key={s.label} onClick={() => toggleService(s.label)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 8, border: `2px solid ${selected ? accentColor : "#e5e7eb"}`, background: selected ? accentColor + "0d" : "#fafafa", cursor: "pointer", transition: "all 0.2s" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 4, border: `2px solid ${selected ? accentColor : "#ccc"}`, background: selected ? accentColor : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {selected && <Check size={12} color="#fff" />}
-                      </div>
-                      <span style={{ fontSize: 14, fontWeight: selected ? 600 : 400, color: selected ? "#111" : "#555" }}>{s.label}</span>
-                    </div>
-                    <span style={{ fontSize: 12, color: "#888", fontFamily: "monospace" }}>GHS {s.ghsMin.toLocaleString()}–{s.ghsMax.toLocaleString()}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <Field label="Custom / Additional Services">
-              <Textarea value={editing.customServices} onChange={set("customServices")} placeholder="Any additional services not listed above..." rows={2} />
-            </Field>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginTop: 16 }}>
-              <Field label="Agreed Project Amount" required>
-                <Input type="number" value={editing.agreedAmount} onChange={set("agreedAmount")} placeholder="0.00" />
-              </Field>
-              <Field label="Deposit %">
-                <Input type="number" value={editing.depositPercent} onChange={set("depositPercent")} placeholder="50" />
-              </Field>
-              <Field label="Rush Fee %">
-                <Input type="number" value={editing.rushFeePercent} onChange={set("rushFeePercent")} placeholder="20" />
-              </Field>
-              <Field label="Revisions Included">
-                <Input type="number" value={editing.revisionsIncluded} onChange={set("revisionsIncluded")} placeholder="2" />
-              </Field>
-              <Field label="Additional Revision Rate">
-                <Input type="number" value={editing.revisionRate} onChange={set("revisionRate")} placeholder="150" />
-              </Field>
-            </div>
-          </div>
-
-          {/* Section: Deliverables */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Deliverables & Requirements</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <Field label="Specific Deliverables (one per line)">
-                <Textarea value={editing.deliverables} onChange={set("deliverables")} placeholder={"e.g., 3 initial logo concepts\nFinal logo: PNG, SVG, PDF\nBrand color palette"} rows={5} />
-              </Field>
-              <Field label="Special Requirements">
-                <Textarea value={editing.specialRequirements} onChange={set("specialRequirements")} placeholder="Print method, color specs, garment types, dimensions, etc." rows={3} />
-              </Field>
-            </div>
-          </div>
-
-          {/* Section: Payment */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Payment Information</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-              <Field label="Account Number"><Input value={editing.paymentAccount} onChange={set("paymentAccount")} /></Field>
-              <Field label="Institution"><Input value={editing.paymentInstitution} onChange={set("paymentInstitution")} /></Field>
-              <Field label="Beneficiary"><Input value={editing.paymentBeneficiary} onChange={set("paymentBeneficiary")} /></Field>
-            </div>
-          </div>
-
-          {/* Section: IP */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Intellectual Property</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Field label="License Type">
-                <Select value={editing.licenseType} onChange={set("licenseType")}>
-                  <option>Non-exclusive commercial</option>
-                  <option>Exclusive commercial</option>
-                  <option>Full assignment of rights</option>
-                  <option>Limited usage license</option>
-                </Select>
-              </Field>
-              <Field label="Source Files Fee (if sold separately)"><Input value={editing.sourceFilesFee} onChange={set("sourceFilesFee")} placeholder="0.00" /></Field>
-            </div>
-            <div style={{ display: "flex", gap: 16, marginTop: 16, flexWrap: "wrap" }}>
-              {[
-                ["portfolioRights", "CGY Portfolio Rights", "CGY may display this work publicly"],
-                ["sourceFilesIncluded", "Source Files Included", "Native files (.AI, .PSD) are included"],
-                ["exclusivity", "Exclusive License", "CGY won't use similar designs for others"],
-              ].map(([key, label, desc]) => (
-                <div key={key} onClick={toggle(key)}
-                  style={{ flex: "1 1 200px", padding: "14px 16px", borderRadius: 8, border: `2px solid ${editing[key] ? accentColor : "#e5e7eb"}`, background: editing[key] ? accentColor + "0d" : "#fafafa", cursor: "pointer", transition: "all 0.2s" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${editing[key] ? accentColor : "#ccc"}`, background: editing[key] ? accentColor : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      {editing[key] && <Check size={11} color="#fff" />}
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: editing[key] ? "#111" : "#555" }}>{label}</span>
-                  </div>
-                  <p style={{ fontSize: 11, color: "#888", marginLeft: 28 }}>{desc}</p>
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
+          {/* Header */}
+          <div className="no-print mb-4 bg-white p-4 md:p-6 rounded-lg shadow-sm">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-3">
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                  {contracts.find(c => c.id === editing.id) ? "Edit Contract" : "New Contract"}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-sm text-gray-500">{editing.contractNumber}</p>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full`} style={{ background: typeInfo.color + "18", color: typeInfo.color }}>
+                    {typeInfo.label}
+                  </span>
                 </div>
-              ))}
+              </div>
+              <button onClick={cancelEdit} className="bg-gray-500 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 font-medium transition">
+                <X size={18} /> Cancel
+              </button>
             </div>
-          </div>
 
-          {/* Save buttons */}
-          <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", paddingBottom: 40 }}>
-            <button
-              onClick={() => { setEditing(null); setView("dashboard"); }}
-              className={matchInvoiceUI ? "flex items-center gap-2 px-4 py-2 rounded-lg font-medium border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition" : ""}
-              style={matchInvoiceUI ? undefined : btnGhost}
-            >
-              <X size={16} /> {matchInvoiceUI ? "Back to contracts" : "Cancel"}
-            </button>
-            <button onClick={() => generateContractPDF(editing)} style={btnBlack}><Eye size={16} /> Preview PDF</button>
-            <button onClick={saveContract} style={{ ...btnRed, background: accentColor, fontSize: 15, padding: "12px 28px" }}><Check size={18} /> Save Contract</button>
+            {/* ── Section: Contract Details ── */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold text-lg text-gray-900 border-b border-gray-100 pb-2">Contract Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelCls}>Contract Number</label>
+                  <input type="text" value={editing.contractNumber} onChange={set("contractNumber")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Contract Date</label>
+                  <input type="date" value={editing.contractDate} onChange={set("contractDate")} className={inputCls} style={{ maxWidth: "100%" }} />
+                </div>
+                <div>
+                  <label className={labelCls}>Status</label>
+                  <select value={editing.status} onChange={set("status")} className={inputCls}>
+                    {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Start Date</label>
+                  <input type="date" value={editing.startDate} onChange={set("startDate")} className={inputCls} style={{ maxWidth: "100%" }} />
+                </div>
+                <div>
+                  <label className={labelCls}>Estimated End Date</label>
+                  <input type="date" value={editing.endDate} onChange={set("endDate")} className={inputCls} style={{ maxWidth: "100%" }} />
+                </div>
+                <div>
+                  <label className={labelCls}>Currency</label>
+                  <select value={editing.currency} onChange={set("currency")} className={inputCls}>
+                    <option value="GHS">GHS — Ghanaian Cedis</option>
+                    <option value="USD">USD — US Dollars</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Section: Client Info ── */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold text-lg text-gray-900 border-b border-gray-100 pb-2">Client Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Client Name *</label>
+                  <input type="text" placeholder="Full name" value={editing.clientName} onChange={set("clientName")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Company / Brand</label>
+                  <input type="text" placeholder="Business name" value={editing.clientCompany} onChange={set("clientCompany")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Client Email</label>
+                  <input type="email" placeholder="client@email.com" value={editing.clientEmail} onChange={set("clientEmail")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Client Phone</label>
+                  <input type="tel" placeholder="+233 ..." value={editing.clientPhone} onChange={set("clientPhone")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Client Address</label>
+                  <input type="text" placeholder="Address, City, Country" value={editing.clientAddress} onChange={set("clientAddress")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Project Title *</label>
+                  <input type="text" placeholder="e.g., Logo Design for XYZ Brand" value={editing.projectTitle} onChange={set("projectTitle")} className={inputCls} />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Section: Services ── */}
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold text-lg text-gray-900">Services</h3>
+                <span className="text-sm text-gray-400">Select all that apply</span>
+              </div>
+              <div className="space-y-2 mb-4">
+                {typeInfo.services.map(s => {
+                  const selected = editing.servicesSelected.includes(s.label);
+                  return (
+                    <div key={s.label} onClick={() => toggleService(s.label)}
+                      className={`flex items-center justify-between p-3 md:p-4 rounded-lg border-2 cursor-pointer transition ${selected ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-gray-50 hover:bg-gray-100"}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition ${selected ? "bg-blue-500 border-blue-500" : "border-2 border-gray-300 bg-white"}`}>
+                          {selected && <Check size={12} className="text-white" />}
+                        </div>
+                        <span className={`text-sm ${selected ? "font-semibold text-gray-900" : "text-gray-600"}`}>{s.label}</span>
+                      </div>
+                      <span className="text-xs text-gray-400 font-mono">GHS {s.ghsMin.toLocaleString()}–{s.ghsMax.toLocaleString()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div>
+                <label className={labelCls}>Custom / Additional Services</label>
+                <textarea value={editing.customServices} onChange={set("customServices")} placeholder="Any additional services..." rows={2} className={`${inputCls} resize-y`} />
+              </div>
+            </div>
+
+            {/* ── Section: Pricing ── */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div>
+                <label className={labelCls}>Agreed Amount *</label>
+                <input type="number" placeholder="0.00" value={editing.agreedAmount} onChange={set("agreedAmount")} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Deposit %</label>
+                <input type="number" placeholder="50" value={editing.depositPercent} onChange={set("depositPercent")} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Rush Fee %</label>
+                <input type="number" placeholder="20" value={editing.rushFeePercent} onChange={set("rushFeePercent")} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Revisions Included</label>
+                <input type="number" placeholder="2" value={editing.revisionsIncluded} onChange={set("revisionsIncluded")} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Additional Revision Rate</label>
+                <input type="number" placeholder="150" value={editing.revisionRate} onChange={set("revisionRate")} className={inputCls} />
+              </div>
+            </div>
+
+            {/* ── Section: Deliverables ── */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold text-lg text-gray-900 border-b border-gray-100 pb-2">Deliverables & Requirements</h3>
+              <div>
+                <label className={labelCls}>Specific Deliverables (one per line)</label>
+                <textarea value={editing.deliverables} onChange={set("deliverables")} placeholder={"e.g., 3 initial logo concepts\nFinal logo: PNG, SVG, PDF\nBrand color palette"} rows={4} className={`${inputCls} resize-y`} />
+              </div>
+              <div>
+                <label className={labelCls}>Special Requirements</label>
+                <textarea value={editing.specialRequirements} onChange={set("specialRequirements")} placeholder="Print method, color specs, garment types, dimensions, etc." rows={3} className={`${inputCls} resize-y`} />
+              </div>
+            </div>
+
+            {/* ── Section: Payment Info ── */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold text-lg text-gray-900 border-b border-gray-100 pb-2">Payment Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelCls}>Account Number</label>
+                  <input type="text" value={editing.paymentAccount} onChange={set("paymentAccount")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Institution</label>
+                  <input type="text" value={editing.paymentInstitution} onChange={set("paymentInstitution")} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Beneficiary</label>
+                  <input type="text" value={editing.paymentBeneficiary} onChange={set("paymentBeneficiary")} className={inputCls} />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Section: IP ── */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-lg text-gray-900 border-b border-gray-100 pb-2 mb-4">Intellectual Property</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className={labelCls}>License Type</label>
+                  <select value={editing.licenseType} onChange={set("licenseType")} className={inputCls}>
+                    <option>Non-exclusive commercial</option>
+                    <option>Exclusive commercial</option>
+                    <option>Full assignment of rights</option>
+                    <option>Limited usage license</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Source Files Fee (if sold separately)</label>
+                  <input type="number" placeholder="0.00" value={editing.sourceFilesFee} onChange={set("sourceFilesFee")} className={inputCls} />
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {[
+                  ["portfolioRights", "CGY Portfolio Rights", "CGY may display this work publicly"],
+                  ["sourceFilesIncluded", "Source Files Included", "Native files (.AI, .PSD) are included"],
+                  ["exclusivity", "Exclusive License", "CGY won't use similar designs for others"],
+                ].map(([key, label, desc]) => (
+                  <div key={key} onClick={toggle(key)}
+                    className={`flex-1 p-4 rounded-lg border-2 cursor-pointer transition ${editing[key] ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-gray-50 hover:bg-gray-100"}`}>
+                    <div className="flex items-center gap-3 mb-1">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition ${editing[key] ? "bg-blue-500" : "border-2 border-gray-300 bg-white"}`}>
+                        {editing[key] && <Check size={12} className="text-white" />}
+                      </div>
+                      <span className={`text-sm font-semibold ${editing[key] ? "text-gray-900" : "text-gray-600"}`}>{label}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 ml-8">{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Action Buttons ── */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button onClick={saveContract} className="flex-1 bg-blue-500 text-white py-3.5 rounded-lg hover:bg-blue-600 text-base font-medium transition shadow-sm">
+                {contracts.find(c => c.id === editing.id) ? "Update Contract" : "Save Contract"}
+              </button>
+              <button onClick={() => generateContractPDF(editing)} className="flex-1 bg-green-500 text-white py-3.5 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 text-base font-medium transition shadow-sm">
+                <Download size={20} /> Export to PDF
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  /* ── DASHBOARD VIEW ── */
-  const dashboardRootStyle = matchInvoiceUI ? { minHeight: "100%", background: "transparent" } : { minHeight: "100vh", background: "#f8f8f8", fontFamily: "'DM Sans', sans-serif" };
-
+  /* ─────────────── DASHBOARD ─────────────── */
   return (
-    <div style={dashboardRootStyle} className={matchInvoiceUI ? "min-h-full" : ""}>
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-4">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
-        * { box-sizing: border-box; }
-        @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
-        .contract-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important; transform: translateY(-1px); }
-        .contract-card { transition: all 0.2s ease; }
-        .action-btn:hover { opacity: 0.8; }
+        @keyframes slide-down { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .animate-slide-down { animation: slide-down 0.3s ease-out; }
         @media (max-width: 768px) {
-          .desktop-only { display: none !important; }
-          .stat-grid { grid-template-columns: 1fr 1fr !important; }
-          .filter-row { flex-direction: column !important; }
-          .contract-actions { flex-wrap: wrap !important; }
+          input, select, button, textarea { font-size: 16px !important; }
+          input[type="date"] { width: 100% !important; max-width: 100% !important; -webkit-appearance: none !important; appearance: none !important; background-color: white !important; border: 2px solid #d1d5db !important; border-radius: 0.5rem !important; padding: 0.75rem 1rem !important; color: #111827 !important; font-size: 16px !important; }
+          select { -webkit-appearance: none !important; appearance: none !important; background-color: white !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23334155' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 12px 12px; padding-right: 2.5rem !important; }
         }
       `}</style>
-      <Notif notif={notif} onClose={() => setNotif({ show: false })} />
 
-      {/* TOP NAV — same as Invoice when matchInvoiceUI: Create Contract | Statistics */}
-      {matchInvoiceUI ? (
-        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
-          <div className="no-print hidden md:flex mb-6 gap-4">
-            <button
-              onClick={() => setCurrentView("create")}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${
-                currentView === "create" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <FileText size={20} /> Create Contract
-            </button>
-            <button
-              onClick={() => setCurrentView("stats")}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${
-                currentView === "stats" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <BarChart3 size={20} /> Statistics
-            </button>
-          </div>
-
-          {/* Mobile bottom nav — same as Invoice */}
-          <div className="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-40">
-            <div className="flex justify-around items-center h-16">
-              <button
-                onClick={() => setCurrentView("create")}
-                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
-                  currentView === "create" ? "text-blue-500" : "text-gray-600"
-                }`}
-              >
-                <FileText size={22} />
-                <span className="text-xs font-medium">Create</span>
-              </button>
-              <button
-                onClick={() => setCurrentView("stats")}
-                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
-                  currentView === "stats" ? "text-blue-500" : "text-gray-600"
-                }`}
-              >
-                <BarChart3 size={22} />
-                <span className="text-xs font-medium">Stats</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Stats view — same layout as Invoice Statistics */}
-          {currentView === "stats" && (
-            <div className="no-print bg-white p-4 md:p-6 rounded-lg shadow-sm mb-4">
-              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Contract Statistics</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-                <div className="bg-gray-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Total Contracts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.total}</div>
-                </div>
-                <div className="bg-red-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Design Contracts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-red-600">{stats.graphic}</div>
-                </div>
-                <div className="bg-amber-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Merch Contracts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-amber-700">{stats.merch}</div>
-                </div>
-                <div className="bg-green-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Signed / Active</div>
-                  <div className="text-2xl md:text-3xl font-bold text-green-600">{stats.signed}</div>
-                </div>
-                <div className="bg-gray-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Drafts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.draft}</div>
-                </div>
-                <div className="bg-blue-50 p-4 md:p-6 rounded border border-blue-100">
-                  <div className="text-xs md:text-sm text-blue-600 mb-2">Total Contract Value</div>
-                  <div className="text-xl md:text-2xl font-bold text-blue-700">
-                    GHS {stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Create view: add buttons, then filters + list (same theme as Invoice) */}
-          {currentView === "create" && (
-            <>
-              <div className="mb-6 gap-4 flex flex-wrap">
-                <button onClick={() => newContract("graphic")} className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition bg-blue-500 text-white hover:bg-blue-600 shadow-md">
-                  <Briefcase size={20} /> + Design Contract
-                </button>
-                <button onClick={() => newContract("merch")} className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300">
-                  <Scissors size={20} /> + Merch Contract
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      ) : (
-        <div style={{ background: "#111", color: "#fff", padding: "0 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", position: "sticky", top: 0, zIndex: 100 }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 26, color: BRAND.red, lineHeight: 1 }}>CGY</span>
-              <div style={{ width: 1, height: 28, background: "#333" }} />
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Contract Manager</div>
-                <div style={{ fontSize: 10, color: "#888", letterSpacing: "0.06em", textTransform: "uppercase" }}>Curio Graphics Yard</div>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => newContract("graphic")} style={{ background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <Briefcase size={15} /> + Design Contract
-              </button>
-              <button onClick={() => newContract("merch")} style={{ background: BRAND.gold, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <Scissors size={15} /> + Merch Contract
-              </button>
-            </div>
+      {/* Notification */}
+      {notification.show && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 animate-slide-down">
+          <div className={`rounded-lg shadow-lg p-4 flex items-start gap-3 ${notification.type === "success" ? "bg-green-50 border border-green-200" : notification.type === "error" ? "bg-red-50 border border-red-200" : "bg-blue-50 border border-blue-200"}`}>
+            {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />}
+            {notification.type === "error" && <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />}
+            {notification.type === "info" && <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />}
+            <p className={`flex-1 text-sm ${notification.type === "success" ? "text-green-800" : notification.type === "error" ? "text-red-800" : "text-blue-800"}`}>{notification.message}</p>
+            <button onClick={() => setNotification({ show: false, message: "", type: "info" })} className="flex-shrink-0 text-gray-400 hover:text-gray-600"><X size={18} /></button>
           </div>
         </div>
       )}
 
-      <div style={matchInvoiceUI ? undefined : { maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }} className={matchInvoiceUI ? "max-w-6xl mx-auto px-4 py-4 md:py-8" : ""}>
-        {/* When matchInvoiceUI, stat cards only in Statistics tab; show filters+list only in Create tab */}
-        {(!matchInvoiceUI || currentView === "create") && (
-        <>
-        {/* STAT CARDS — only when !matchInvoiceUI (stats are in Statistics view when matchInvoiceUI) */}
-        {!matchInvoiceUI && (
-        <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 14, marginBottom: 28 }}>
-          {[
-            { label: "Total Contracts", value: stats.total, color: "#111", bgClass: matchInvoiceUI ? "bg-gray-50" : null },
-            { label: "Design Contracts", value: stats.graphic, color: BRAND.red, bgClass: matchInvoiceUI ? "bg-red-50" : null },
-            { label: "Merch Contracts", value: stats.merch, color: BRAND.gold, bgClass: matchInvoiceUI ? "bg-amber-50" : null },
-            { label: "Signed / Active", value: stats.signed, color: "#16a34a", bgClass: matchInvoiceUI ? "bg-green-50" : null },
-            { label: "Drafts", value: stats.draft, color: "#9ca3af", bgClass: matchInvoiceUI ? "bg-gray-50" : null },
-            { label: "Total Contract Value", value: `GHS ${stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: "#2563eb", small: true, bgClass: matchInvoiceUI ? "bg-blue-50" : null },
-          ].map((s, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: 10, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", borderTop: `3px solid ${s.color}` }}>
-              <div style={{ fontSize: 11, color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>{s.label}</div>
-              <div style={{ fontSize: s.small ? 16 : 28, fontWeight: 700, color: s.color, fontFamily: s.small ? "inherit" : "'DM Serif Display', serif", lineHeight: 1.1 }}>{s.value}</div>
-            </div>
-          ))}
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
+        {/* Desktop Nav — same style as Invoice */}
+        <div className="no-print hidden md:flex mb-6 gap-4">
+          <button
+            onClick={() => setCurrentView("create")}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${currentView === "create" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+          >
+            <FileText size={20} /> Create Contract
+          </button>
+          <button
+            onClick={() => setCurrentView("stats")}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${currentView === "stats" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+          >
+            <BarChart3 size={20} /> Statistics
+          </button>
         </div>
+
+        {/* Mobile Bottom Nav */}
+        <div className="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-40">
+          <div className="flex justify-around items-center h-16">
+            <button onClick={() => setCurrentView("create")} className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${currentView === "create" ? "text-blue-500" : "text-gray-600"}`}>
+              <FileText size={22} />
+              <span className="text-xs font-medium">Create</span>
+            </button>
+            <button onClick={() => setCurrentView("stats")} className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${currentView === "stats" ? "text-blue-500" : "text-gray-600"}`}>
+              <BarChart3 size={22} />
+              <span className="text-xs font-medium">Stats</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ─── STATS VIEW ─── */}
+        {currentView === "stats" && (
+          <div className="no-print bg-white p-4 md:p-6 rounded-lg shadow-sm mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3">
+              <h2 className="text-xl md:text-2xl font-bold">Contract Statistics</h2>
+            </div>
+
+            {/* Main stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+              <div className="bg-gray-50 p-4 md:p-6 rounded">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">Total Contracts</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.total}</div>
+              </div>
+              <div className="bg-red-50 p-4 md:p-6 rounded">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">Design Contracts</div>
+                <div className="text-2xl md:text-3xl font-bold text-red-600">{stats.graphic}</div>
+              </div>
+              <div className="bg-amber-50 p-4 md:p-6 rounded">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">Merch Contracts</div>
+                <div className="text-2xl md:text-3xl font-bold text-amber-700">{stats.merch}</div>
+              </div>
+            </div>
+
+            {/* Count stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+              <div className="bg-green-50 p-4 md:p-6 rounded">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">Signed / Active</div>
+                <div className="text-2xl md:text-3xl font-bold text-green-600">{stats.signed}</div>
+              </div>
+              <div className="bg-gray-50 p-4 md:p-6 rounded">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">Drafts</div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.draft}</div>
+              </div>
+              <div className="bg-blue-50 p-4 md:p-6 rounded">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">Total Value (GHS)</div>
+                <div className="text-xl md:text-2xl font-bold text-blue-700">
+                  {stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+              <div className="bg-purple-50 p-4 md:p-6 rounded border border-purple-100">
+                <div className="flex items-center gap-1 text-xs md:text-sm text-purple-600 mb-2">
+                  <Calendar size={13} />
+                  <span>This Month</span>
+                </div>
+                <div className="text-xl md:text-2xl font-bold text-purple-700">{stats.thisMonth} contracts</div>
+                <div className="text-sm font-semibold text-purple-500 mt-1">GHS {stats.thisMonthValue.toFixed(2)}</div>
+              </div>
+            </div>
+
+            {/* All Contracts table */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 md:mb-4 gap-3">
+                <h3 className="text-lg md:text-xl font-bold">All Contracts</h3>
+                <div className="relative w-full sm:w-64">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input type="text" placeholder="Search by #, client or project" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none transition" />
+                  {searchQuery && <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
+                </div>
+              </div>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block bg-gray-50 rounded-lg overflow-x-auto shadow-sm">
+                <table className="w-full min-w-full">
+                  <thead className="bg-gray-200">
+                    <tr>
+                      <th className="text-left p-3 md:p-4 text-sm">Contract #</th>
+                      <th className="text-left p-3 md:p-4 text-sm">Date</th>
+                      <th className="text-left p-3 md:p-4 text-sm">Client</th>
+                      <th className="text-left p-3 md:p-4 text-sm">Project</th>
+                      <th className="text-right p-3 md:p-4 text-sm">Value</th>
+                      <th className="text-center p-3 md:p-4 text-sm">Status</th>
+                      <th className="text-center p-3 md:p-4 text-sm">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredContracts.map(c => (
+                      <tr key={c.id} className="border-t border-gray-200">
+                        <td className="p-3 md:p-4 text-sm">{c.contractNumber}</td>
+                        <td className="p-3 md:p-4 text-sm">{fmtDate(c.contractDate)}</td>
+                        <td className="p-3 md:p-4 text-sm">{c.clientName || "N/A"}</td>
+                        <td className="p-3 md:p-4 text-sm max-w-[200px] truncate">{c.projectTitle || "—"}</td>
+                        <td className="text-right p-3 md:p-4 text-sm">{c.currency} {c.agreedAmount ? parseFloat(c.agreedAmount).toLocaleString() : "—"}</td>
+                        <td className="text-center p-3 md:p-4">
+                          <span className={`px-2 md:px-3 py-1 rounded text-xs md:text-sm font-semibold ${STATUS_STYLES[c.status] || STATUS_STYLES.DRAFT}`}>{c.status}</span>
+                        </td>
+                        <td className="text-center p-3 md:p-4">
+                          <div className="flex gap-2 justify-center">
+                            <button onClick={() => setEditing({ ...c })} className="bg-blue-500 text-white p-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm" title="Edit"><Edit2 size={18} /></button>
+                            <button onClick={() => generateContractPDF(c)} className="bg-green-500 text-white p-2.5 rounded-lg hover:bg-green-600 transition shadow-sm" title="Export PDF"><Download size={18} /></button>
+                            <button onClick={() => duplicateContract(c)} className="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200 transition shadow-sm border border-gray-200" title="Duplicate"><Copy size={18} /></button>
+                            <button onClick={() => deleteContract(c.id)} className="bg-red-500 text-white p-2.5 rounded-lg hover:bg-red-600 transition shadow-sm" title="Delete"><Trash2 size={18} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {filteredContracts.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    {searchQuery ? "No contracts match your search." : "No contracts yet."}
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-3">
+                {filteredContracts.map(c => (
+                  <div key={c.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="font-semibold text-gray-900">{c.contractNumber}</div>
+                        <div className="text-sm text-gray-600 mt-1">{c.clientName || "N/A"}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{c.projectTitle || "—"}</div>
+                        <div className="text-xs text-gray-500 mt-1">{fmtDate(c.contractDate)}</div>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${STATUS_STYLES[c.status] || STATUS_STYLES.DRAFT}`}>{c.status}</span>
+                    </div>
+                    <div className="mb-3">
+                      <div className="text-gray-600 text-xs">Contract Value</div>
+                      <div className="font-semibold text-gray-900">{c.currency} {c.agreedAmount ? parseFloat(c.agreedAmount).toLocaleString() : "—"}</div>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <button onClick={() => setEditing({ ...c })} className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-xs font-medium flex items-center gap-1"><Edit2 size={14} /> Edit</button>
+                      <button onClick={() => generateContractPDF(c)} className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition text-xs font-medium flex items-center gap-1"><Download size={14} /> PDF</button>
+                      <button onClick={() => duplicateContract(c)} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-xs font-medium flex items-center gap-1 border border-gray-200"><Copy size={14} /> Copy</button>
+                      <button onClick={() => deleteContract(c.id)} className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition text-xs font-medium flex items-center gap-1"><Trash2 size={14} /> Delete</button>
+                    </div>
+                  </div>
+                ))}
+                {filteredContracts.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
+                    {searchQuery ? "No contracts match your search." : "No contracts yet. Create your first one!"}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* FILTERS */}
-        <div className="filter-row" style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: "1 1 200px" }}>
-            <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#aaa", pointerEvents: "none" }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by client, #, or project..."
-              style={{ width: "100%", border: "2px solid #e5e7eb", borderRadius: 8, padding: "10px 14px 10px 36px", fontSize: 14, outline: "none", background: "#fff" }} />
-          </div>
-          <select value={filterType} onChange={e => setFilterType(e.target.value)}
-            style={{ border: "2px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 14, background: "#fff", cursor: "pointer" }}>
-            <option value="all">All Types</option>
-            <option value="graphic">Graphic Design</option>
-            <option value="merch">Merch Design</option>
-          </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            style={{ border: "2px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 14, background: "#fff", cursor: "pointer" }}>
-            <option value="all">All Statuses</option>
-            {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-
-        {/* CONTRACTS LIST */}
-        {filtered.length === 0 ? (
-          <div className={matchInvoiceUI ? "text-center py-16 px-6 bg-white rounded-lg shadow-sm" : ""} style={matchInvoiceUI ? undefined : { textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: 12 }}>
-            <p className={matchInvoiceUI ? "text-gray-600 text-base mb-6" : ""} style={matchInvoiceUI ? undefined : { color: "#aaa", fontSize: 16, marginBottom: 24 }}>
-              {contracts.length === 0 ? "No contracts yet. Create your first one!" : "No contracts match your filters."}
-            </p>
-            <div className={matchInvoiceUI ? "flex gap-3 justify-center flex-wrap" : ""} style={matchInvoiceUI ? undefined : { display: "flex", gap: 12, justifyContent: "center" }}>
-              <button onClick={() => newContract("graphic")} className={matchInvoiceUI ? "flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 shadow-md transition" : ""} style={matchInvoiceUI ? undefined : { background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                <Briefcase size={20} /> + Design Contract
-              </button>
-              <button onClick={() => newContract("merch")} className={matchInvoiceUI ? "flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 transition" : ""} style={matchInvoiceUI ? undefined : { background: BRAND.gold, color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                <Scissors size={20} /> + Merch Contract
-              </button>
+        {/* ─── CREATE VIEW ─── */}
+        {currentView === "create" && (
+          <div className="no-print bg-white p-4 md:p-6 rounded-lg shadow-sm mb-4">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-3">
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">New Contract</h1>
+                <p className="text-sm text-gray-500 mt-1">Choose a contract type to get started</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className={matchInvoiceUI ? "flex flex-col gap-3" : ""} style={matchInvoiceUI ? undefined : { display: "flex", flexDirection: "column", gap: 12 }}>
-            {filtered.map(c => {
-              const typeInfo = CONTRACT_TYPES[c.type];
-              const deposit = c.agreedAmount ? ((parseFloat(c.agreedAmount) * c.depositPercent) / 100).toFixed(2) : "—";
-              return (
-                <div key={c.id} className={`contract-card ${matchInvoiceUI ? "bg-white rounded-lg shadow-sm p-4 md:p-5 border-l-4 flex items-center gap-5" : ""}`} style={matchInvoiceUI ? { borderLeftColor: typeInfo.color } : { background: "#fff", borderRadius: 12, padding: "18px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", borderLeft: `4px solid ${typeInfo.color}`, display: "flex", alignItems: "center", gap: 20 }}>
-                  {/* Type icon */}
-                  <div style={{ width: 44, height: 44, borderRadius: 10, background: typeInfo.color + "15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {c.type === "graphic" ? <Briefcase size={20} color={typeInfo.color} /> : <Scissors size={20} color={typeInfo.color} />}
-                  </div>
 
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: "#111" }}>{c.projectTitle || "Untitled Project"}</span>
-                      <StatusBadge status={c.status} />
+            {/* Type Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {Object.entries(CONTRACT_TYPES).map(([key, type]) => (
+                <button key={key} onClick={() => startNew(key)}
+                  className="group p-6 rounded-xl border-2 border-gray-200 hover:border-blue-400 bg-gray-50 hover:bg-blue-50 transition text-left">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: type.color + "18" }}>
+                      {key === "graphic" ? <Briefcase size={22} style={{ color: type.color }} /> : <Scissors size={22} style={{ color: type.color }} />}
                     </div>
-                    <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#888", flexWrap: "wrap" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}><User size={12} /> {c.clientName || "—"}</span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}><FileText size={12} /> {c.contractNumber}</span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Calendar size={12} /> {fmtDate(c.contractDate)}</span>
-                      <span style={{ color: typeInfo.color, fontWeight: 600 }}>{c.currency} {c.agreedAmount ? parseFloat(c.agreedAmount).toLocaleString() : "—"}</span>
+                    <span className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition">{type.label}</span>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    {key === "graphic"
+                      ? "Logo design, brand identity, flyers, social media, packaging and more."
+                      : "Apparel graphics, clothing line concepts, tech packs, and campaign posters."}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {type.services.slice(0, 3).map(s => (
+                      <span key={s.label} className="text-xs bg-white border border-gray-200 text-gray-500 px-2 py-0.5 rounded-full">{s.label}</span>
+                    ))}
+                    {type.services.length > 3 && <span className="text-xs text-gray-400">+{type.services.length - 3} more</span>}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Existing contracts quick view */}
+            {contracts.length > 0 && (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
+                  <h3 className="text-lg font-bold text-gray-900">Recent Contracts</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    <div className="relative w-full sm:w-56">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <input type="text" placeholder="Search contracts..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full pl-8 pr-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:outline-none transition" />
+                      {searchQuery && <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={12} /></button>}
                     </div>
-                    {c.servicesSelected.length > 0 && (
-                      <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                        {c.servicesSelected.slice(0, 3).map(s => (
-                          <span key={s} style={{ fontSize: 10, background: "#f3f4f6", color: "#555", padding: "2px 8px", borderRadius: 20 }}>{s}</span>
-                        ))}
-                        {c.servicesSelected.length > 3 && <span style={{ fontSize: 10, color: "#aaa" }}>+{c.servicesSelected.length - 3} more</span>}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Deposit pill */}
-                  <div className="desktop-only" style={{ textAlign: "center", flexShrink: 0 }}>
-                    <div style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 2 }}>Deposit</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{c.currency} {deposit}</div>
-                    <div style={{ fontSize: 10, color: "#aaa" }}>{c.depositPercent}%</div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="contract-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <button onClick={() => editContract(c)} title="Edit" className="action-btn"
-                      style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 7, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
-                      <Edit2 size={14} /> Edit
-                    </button>
-                    <button onClick={() => generateContractPDF(c)} title="Export PDF" className="action-btn"
-                      style={{ background: typeInfo.color, color: "#fff", border: "none", borderRadius: 7, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
-                      <Download size={14} /> PDF
-                    </button>
-                    <button onClick={() => duplicateContract(c)} title="Duplicate" className="action-btn"
-                      style={{ background: "#f3f4f6", color: "#555", border: "1px solid #e5e7eb", borderRadius: 7, padding: "8px 10px", cursor: "pointer" }}>
-                      <Copy size={14} />
-                    </button>
-                    <button onClick={() => deleteContract(c.id)} title="Delete" className="action-btn"
-                      style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 7, padding: "8px 10px", cursor: "pointer" }}>
-                      <Trash2 size={14} />
-                    </button>
+                    <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                      className="border-2 border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition bg-white">
+                      <option value="all">All Statuses</option>
+                      {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <select value={filterType} onChange={e => setFilterType(e.target.value)}
+                      className="border-2 border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition bg-white">
+                      <option value="all">All Types</option>
+                      <option value="graphic">Graphic Design</option>
+                      <option value="merch">Merch Design</option>
+                    </select>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-3">
+                  {filteredContracts.map(c => (
+                    <div key={c.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="font-semibold text-gray-900">{c.contractNumber}</div>
+                          <div className="text-sm text-gray-600 mt-1">{c.clientName || "N/A"}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">{c.projectTitle || "—"}</div>
+                          <div className="text-xs text-gray-500 mt-1">{fmtDate(c.contractDate)}</div>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${STATUS_STYLES[c.status] || STATUS_STYLES.DRAFT}`}>{c.status}</span>
+                      </div>
+                      <div className="mb-3">
+                        <div className="text-gray-600 text-xs">Contract Value</div>
+                        <div className="font-semibold text-gray-900">{c.currency} {c.agreedAmount ? parseFloat(c.agreedAmount).toLocaleString() : "—"}</div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <button onClick={() => setEditing({ ...c })} className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition text-xs font-medium flex items-center gap-1"><Edit2 size={14} /> Edit</button>
+                        <button onClick={() => generateContractPDF(c)} className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition text-xs font-medium flex items-center gap-1"><Download size={14} /> PDF</button>
+                        <button onClick={() => duplicateContract(c)} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition text-xs font-medium flex items-center gap-1 border border-gray-200"><Copy size={14} /> Copy</button>
+                        <button onClick={() => deleteContract(c.id)} className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition text-xs font-medium flex items-center gap-1"><Trash2 size={14} /> Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredContracts.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
+                      No contracts match your filters.
+                    </div>
+                  )}
+                </div>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block bg-gray-50 rounded-lg overflow-x-auto shadow-sm">
+                  <table className="w-full min-w-full">
+                    <thead className="bg-gray-200">
+                      <tr>
+                        <th className="text-left p-3 md:p-4 text-sm">Contract #</th>
+                        <th className="text-left p-3 md:p-4 text-sm">Date</th>
+                        <th className="text-left p-3 md:p-4 text-sm">Client</th>
+                        <th className="text-left p-3 md:p-4 text-sm">Project</th>
+                        <th className="text-right p-3 md:p-4 text-sm">Value</th>
+                        <th className="text-center p-3 md:p-4 text-sm">Status</th>
+                        <th className="text-center p-3 md:p-4 text-sm">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredContracts.map(c => (
+                        <tr key={c.id} className="border-t border-gray-200">
+                          <td className="p-3 md:p-4 text-sm">{c.contractNumber}</td>
+                          <td className="p-3 md:p-4 text-sm">{fmtDate(c.contractDate)}</td>
+                          <td className="p-3 md:p-4 text-sm">{c.clientName || "N/A"}</td>
+                          <td className="p-3 md:p-4 text-sm max-w-[180px] truncate">{c.projectTitle || "—"}</td>
+                          <td className="text-right p-3 md:p-4 text-sm">{c.currency} {c.agreedAmount ? parseFloat(c.agreedAmount).toLocaleString() : "—"}</td>
+                          <td className="text-center p-3 md:p-4">
+                            <span className={`px-2 md:px-3 py-1 rounded text-xs md:text-sm font-semibold ${STATUS_STYLES[c.status] || STATUS_STYLES.DRAFT}`}>{c.status}</span>
+                          </td>
+                          <td className="text-center p-3 md:p-4">
+                            <div className="flex gap-2 justify-center">
+                              <button onClick={() => setEditing({ ...c })} className="bg-blue-500 text-white p-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm" title="Edit"><Edit2 size={18} /></button>
+                              <button onClick={() => generateContractPDF(c)} className="bg-green-500 text-white p-2.5 rounded-lg hover:bg-green-600 transition shadow-sm" title="Export PDF"><Download size={18} /></button>
+                              <button onClick={() => duplicateContract(c)} className="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-gray-200 transition shadow-sm border border-gray-200" title="Duplicate"><Copy size={18} /></button>
+                              <button onClick={() => deleteContract(c.id)} className="bg-red-500 text-white p-2.5 rounded-lg hover:bg-red-600 transition shadow-sm" title="Delete"><Trash2 size={18} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredContracts.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">No contracts match your filters.</div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
-
-        {/* Bottom spacer for mobile */}
-        <div style={{ height: 80 }} />
-        </>
-        )}
       </div>
-
-      {/* MOBILE BOTTOM NAV — only when !matchInvoiceUI */}
-      {!matchInvoiceUI && (
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #e5e7eb", padding: "8px 16px 12px", zIndex: 100 }}
-        className="mobile-nav md:hidden">
-        <div style={{ display: "flex", justifyContent: "space-around" }}>
-          <button onClick={() => newContract("graphic")} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: BRAND.red, fontSize: 11, fontWeight: 600 }}>
-            <Briefcase size={22} /><span>Design</span>
-          </button>
-          <button onClick={() => newContract("merch")} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, color: BRAND.gold, fontSize: 11, fontWeight: 600 }}>
-            <Scissors size={22} /><span>Merch</span>
-          </button>
-        </div>
-      </div>
-      )}  
     </div>
   );
 }
