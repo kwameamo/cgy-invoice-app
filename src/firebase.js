@@ -21,7 +21,8 @@ export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const signInWithApple = () => signInWithPopup(auth, appleProvider);
 export const logout = () => signOut(auth);
 
-// Firestore helper functions
+// ─── Invoice functions ───────────────────────────────────────────────────────
+
 export const getUserInvoices = async (userId) => {
   try {
     const invoicesRef = collection(db, 'invoices');
@@ -31,7 +32,6 @@ export const getUserInvoices = async (userId) => {
     querySnapshot.forEach((doc) => {
       invoices.push({ id: doc.id, ...doc.data() });
     });
-    // Sort by savedDate descending (most recent first)
     return invoices.sort((a, b) => {
       const dateA = a.savedDate || a.invoiceDate || '';
       const dateB = b.savedDate || b.invoiceDate || '';
@@ -46,14 +46,10 @@ export const getUserInvoices = async (userId) => {
 export const saveInvoice = async (invoice) => {
   try {
     const invoiceId = invoice.id;
-    // Remove id from the data since it's the document ID, not a field
     const { id, ...invoiceData } = invoice;
-    
-    // Clean up undefined values (Firestore doesn't accept undefined)
     const cleanData = Object.fromEntries(
       Object.entries(invoiceData).filter(([_, value]) => value !== undefined)
     );
-    
     const invoiceRef = doc(db, 'invoices', invoiceId);
     await setDoc(invoiceRef, cleanData, { merge: true });
     return invoice;
@@ -93,6 +89,79 @@ export const updateUserCounter = async (userId, value) => {
     await setDoc(counterRef, { value }, { merge: true });
   } catch (error) {
     console.error('Error updating counter:', error);
+    throw error;
+  }
+};
+
+// ─── Contract functions ──────────────────────────────────────────────────────
+
+export const getUserContracts = async (userId) => {
+  try {
+    const contractsRef = collection(db, 'contracts');
+    const q = query(contractsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    const contracts = [];
+    querySnapshot.forEach((docSnap) => {
+      contracts.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    return contracts.sort((a, b) => {
+      const dateA = a.savedDate || a.contractDate || '';
+      const dateB = b.savedDate || b.contractDate || '';
+      return dateB.localeCompare(dateA);
+    });
+  } catch (error) {
+    console.error('Error fetching contracts:', error);
+    throw error;
+  }
+};
+
+export const saveContract = async (contract) => {
+  try {
+    const contractId = contract.id;
+    const { id, ...contractData } = contract;
+    // Clean undefined values — Firestore rejects them
+    const cleanData = Object.fromEntries(
+      Object.entries(contractData).filter(([_, v]) => v !== undefined)
+    );
+    const contractRef = doc(db, 'contracts', contractId);
+    await setDoc(contractRef, cleanData, { merge: true });
+    return contract;
+  } catch (error) {
+    console.error('Error saving contract:', error);
+    throw error;
+  }
+};
+
+export const deleteContract = async (contractId) => {
+  try {
+    const contractRef = doc(db, 'contracts', contractId);
+    await deleteDoc(contractRef);
+  } catch (error) {
+    console.error('Error deleting contract:', error);
+    throw error;
+  }
+};
+
+export const getUserContractCounter = async (userId) => {
+  try {
+    const counterRef = doc(db, 'contractCounters', userId);
+    const counterSnap = await getDoc(counterRef);
+    if (counterSnap.exists()) {
+      return counterSnap.data().value || 1;
+    }
+    return 1;
+  } catch (error) {
+    console.error('Error fetching contract counter:', error);
+    return 1;
+  }
+};
+
+export const updateUserContractCounter = async (userId, value) => {
+  try {
+    const counterRef = doc(db, 'contractCounters', userId);
+    await setDoc(counterRef, { value }, { merge: true });
+  } catch (error) {
+    console.error('Error updating contract counter:', error);
     throw error;
   }
 };

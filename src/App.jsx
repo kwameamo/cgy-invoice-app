@@ -17,7 +17,7 @@ function ModeSwitcher({ mode, onModeChange }) {
         className={`mode-switcher-tab ${mode === 'invoice' ? 'active' : ''}`}
       >
         <FileText size={18} aria-hidden />
-        <span>Invoice Generator</span>
+        <span>Invoices</span>
       </button>
       <button
         type="button"
@@ -27,7 +27,7 @@ function ModeSwitcher({ mode, onModeChange }) {
         className={`mode-switcher-tab ${mode === 'contract' ? 'active' : ''}`}
       >
         <FileSignature size={18} aria-hidden />
-        <span>Contract Generator</span>
+        <span>Contracts</span>
       </button>
       <div className="mode-switcher-pill" aria-hidden />
     </div>
@@ -252,7 +252,7 @@ const InvoiceGenerator = () => {
               className="mx-auto mb-6 w-24 h-auto"
             />
             <h1 className="text-2xl font-semibold text-gray-900 mb-1">
-              Zentra Command
+              CoreOps Console v1.5
             </h1>
           </div>
 

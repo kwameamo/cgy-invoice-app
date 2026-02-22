@@ -1082,7 +1082,7 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
           </button>
         </div>
       </div>
-      )}
+      )}  
     </div>
   );
 }

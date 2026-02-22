@@ -5,7 +5,7 @@
 @layer base {
   body {
     @apply antialiased;
-    background-color: #2a2a2a;
+    background-color: #f0eee9;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
 }
@@ -23,9 +23,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    /* Dot grid pattern */
-    radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: 0 0;
   pointer-events: none;
@@ -39,8 +37,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    /* Rectangular grid lines */
+  background-image:
     repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0, 0, 0, 0.04) 39px, rgba(0, 0, 0, 0.04) 40px),
     repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0, 0, 0, 0.04) 39px, rgba(0, 0, 0, 0.04) 40px);
   background-size: 40px 40px;
@@ -50,34 +47,34 @@
 
 /* Main content container with rounded corners */
 .main-content-frame {
-  background-color: #f8f7f4;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  min-height: calc(100vh - 40px);
-  margin: 20px;
+  background-color: #f9fafc;
+  /* border-radius: 12px; */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  min-height: calc(100vh - 80px);
+  margin: 12px;
   padding: 0;
   position: relative;
   overflow: hidden;
 }
 
-/* ─── App root & mode switcher ─── */
+/* ─── App root ─── */
 .app-root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #2a2a2a;
+  background-color: #f0eee9;
 }
 
-.app-switcher-header,
-.app-contract-header {
+/* ─── App header — light theme so logo is visible ─── */
+.app-switcher-header {
   flex-shrink: 0;
-  background: #1a1a1a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 10px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 0 20px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
 }
 
 .app-switcher-inner {
@@ -85,85 +82,68 @@
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  gap: 0;
+  height: 58px;
 }
 
 .app-switcher-logo {
-  height: 36px;
+  height: 32px;
   width: auto;
   object-fit: contain;
+  margin-right: 24px;
+  flex-shrink: 0;
 }
 
-/* Mode switcher pill (smooth sliding) — active state from data-active */
-.mode-switcher {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 4px;
-  position: relative;
-}
+/* ─── Switcher handled fully inline in App.jsx ─── */
 
-.mode-switcher-tab {
-  display: inline-flex;
+/* ─── Logout button ─── */
+.mode-logout-btn {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  min-width: 140px;
-  justify-content: center;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
+  gap: 6px;
+  margin-left: auto;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #fee2e2;
+  background: #fff5f5;
+  color: #e63946;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.65);
-  background: transparent;
   cursor: pointer;
-  position: relative;
-  z-index: 1;
-  transition: color 0.25s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.mode-switcher-tab:hover {
-  color: rgba(255, 255, 255, 0.9);
+.mode-logout-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
 
-.mode-switcher-tab.active {
-  color: #fff;
-}
-
-.mode-switcher-pill {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 140px;
-  height: calc(100% - 8px);
-  background: #3b82f6;
-  border-radius: 10px;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-}
-
-.mode-switcher[data-active="contract"] .mode-switcher-pill {
-  transform: translateX(calc(140px + 4px));
-}
-
+/* ─── App content & view panels ─── */
 .app-content {
   flex: 1;
   position: relative;
   min-height: 0;
 }
 
+/* Keep both panels mounted (no flicker) but show/hide via visibility */
 .view-panel {
-  animation: viewFadeIn 0.35s ease-out;
+  width: 100%;
+}
+
+.view-hidden {
+  display: none;
+}
+
+.view-active {
+  display: block;
+  animation: viewFadeIn 0.3s ease-out;
 }
 
 @keyframes viewFadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -171,12 +151,65 @@
   }
 }
 
-.view-panel-invoice {
-  min-height: 100%;
+.view-panel-contract {
+  min-height: calc(100vh - 58px);
+  padding: 12px;
 }
 
-.view-panel-contract {
-  min-height: 100%;
-  padding: 20px;
-  padding-top: 24px;
+/* ─── Contract editor overlay transition ─── */
+@keyframes contractEditorSlide {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.contract-editor-enter {
+  animation: contractEditorSlide 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── Mobile improvements ─── */
+@media (max-width: 640px) {
+  .app-switcher-header {
+    padding: 0 12px;
+  }
+
+  .app-switcher-logo {
+    height: 26px;
+    margin-right: 12px;
+  }
+
+  .mode-tab {
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 5px;
+  }
+
+  .mode-logout-btn span {
+    display: none;
+  }
+
+  .mode-logout-btn {
+    padding: 7px 10px;
+  }
+
+  .main-content-frame {
+    margin: 8px;
+    min-height: calc(100vh - 74px);
+  }
+
+  .view-panel-contract {
+    padding: 8px;
+  }
+}
+
+/* ─── Print ─── */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
