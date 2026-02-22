@@ -8,7 +8,7 @@ import CGYContractManager from './contracts';
 /* ─── Mode switcher: Invoice Generator ⟷ Contract Generator (shown in header after login) ─── */
 function ModeSwitcher({ mode, onModeChange }) {
   return (
-    <div className="mode-switcher" data-active={mode} role="tablist" aria-label="Switch between Invoice and Contract">
+    <nav className="mode-switcher" role="tablist" aria-label="Switch between Invoice and Contract">
       <button
         type="button"
         role="tab"
@@ -16,8 +16,9 @@ function ModeSwitcher({ mode, onModeChange }) {
         onClick={() => onModeChange('invoice')}
         className={`mode-switcher-tab ${mode === 'invoice' ? 'active' : ''}`}
       >
-        <FileText size={18} aria-hidden />
-        <span>Invoice Generator</span>
+        <FileText size={15} aria-hidden />
+        <span className="tab-label-full">Invoice Generator</span>
+        <span className="tab-label-short">Invoices</span>
       </button>
       <button
         type="button"
@@ -26,11 +27,11 @@ function ModeSwitcher({ mode, onModeChange }) {
         onClick={() => onModeChange('contract')}
         className={`mode-switcher-tab ${mode === 'contract' ? 'active' : ''}`}
       >
-        <FileSignature size={18} aria-hidden />
-        <span>Contract Generator</span>
+        <FileSignature size={15} aria-hidden />
+        <span className="tab-label-full">Contract Generator</span>
+        <span className="tab-label-short">Contracts</span>
       </button>
-      <div className="mode-switcher-pill" aria-hidden />
-    </div>
+    </nav>
   );
 }
 
@@ -1469,9 +1470,10 @@ function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 ml-auto"
+            className="ml-auto flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 transition-colors flex-shrink-0"
           >
-            <LogOut size={18} /> Logout
+            <LogOut size={15} />
+            <span className="logout-text">Logout</span>
           </button>
         </div>
       </header>
@@ -1483,7 +1485,7 @@ function App() {
           </div>
         )}
         {mode === 'contract' && (
-          <div className="view-panel view-panel-contract dot-grid-background main-content-frame">
+          <div className="view-panel view-panel-contract">
             <CGYContractManager matchInvoiceUI />
           </div>
         )}

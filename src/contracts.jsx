@@ -4,7 +4,7 @@ import {
   CheckCircle, AlertCircle, Info, Search, Eye, Copy,
   Briefcase, Scissors, BarChart3, ChevronDown, ChevronUp,
   Shield, Clock, DollarSign, User, Building, Calendar,
-  Printer, RefreshCw, Send, Check
+  Printer, RefreshCw, Send, Check, ArrowLeft
 } from "lucide-react";
 import logoUrl from "./assets/cgy_logo_new.png";
 
@@ -604,89 +604,290 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
       });
     };
 
-    const editorRootClass = matchInvoiceUI ? "min-h-full bg-gray-50" : "";
-    const editorRootStyle = matchInvoiceUI ? {} : { minHeight: "100vh", background: "#f8f8f8", fontFamily: "'DM Sans', sans-serif" };
-    const headerStyle = matchInvoiceUI
-      ? { background: "#fff", color: "#111", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", borderBottom: "1px solid #e5e7eb" }
-      : { background: "#111", color: "#fff", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" };
-    const headerInnerStyle = matchInvoiceUI ? { maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 } : { maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 };
-    const cancelBtnStyle = matchInvoiceUI ? { background: "transparent", color: "#6b7280", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } : { ...btnGhost, background: "transparent", color: "#aaa", border: "1px solid #333" };
-    const previewBtnStyle = matchInvoiceUI ? { background: "#fff", color: "#374151", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 16px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } : { ...btnGhost, background: "transparent", color: "#aaa", border: "1px solid #333" };
-    const saveBtnStyle = matchInvoiceUI ? { background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 } : { background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 };
+    /* ── matchInvoiceUI editor — new clean layout ── */
+    if (matchInvoiceUI) {
+      return (
+        <div className="min-h-screen bg-gray-50 pb-24 contract-editor-anim">
+          <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); * { box-sizing: border-box; } @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }`}</style>
+          <Notif notif={notif} onClose={() => setNotif({ show: false })} />
 
-    return (
-      <div className={editorRootClass} style={editorRootStyle}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); * { box-sizing: border-box; } @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }`}</style>
-        <Notif notif={notif} onClose={() => setNotif({ show: false })} />
+          <div className="max-w-4xl mx-auto px-4 pt-5 flex flex-col gap-5">
 
-        {/* Editor Header */}
-        <div style={headerStyle}>
-          <div style={headerInnerStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              {!matchInvoiceUI && <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: BRAND.red }}>CGY</span>}
-              {!matchInvoiceUI && <div style={{ width: 1, height: 28, background: "#333" }} />}
-              <span style={{ fontSize: 13, color: matchInvoiceUI ? "#374151" : "#aaa", fontWeight: matchInvoiceUI ? 600 : 400 }}>{editing.contractNumber}</span>
-              <span style={{ fontSize: 11, background: accentColor + "22", color: accentColor, padding: "2px 10px", borderRadius: 20, fontWeight: 700 }}>{typeInfo.label}</span>
+            {/* ── Breadcrumb action bar ── */}
+            <div className="flex items-center justify-between py-1 mb-1">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  onClick={() => { setEditing(null); setView("dashboard"); }}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors flex-shrink-0"
+                >
+                  <ArrowLeft size={15} /> Contracts
+                </button>
+                <span className="text-gray-300 select-none">/</span>
+                <span className="text-sm text-gray-500 font-medium truncate hidden sm:inline">{editing.contractNumber}</span>
+                <span
+                  className="text-xs font-bold rounded-full px-2.5 py-0.5 flex-shrink-0"
+                  style={{ background: accentColor + '1a', color: accentColor }}
+                >
+                  {editing.type === 'graphic' ? 'Design' : 'Merch'}
+                </span>
+              </div>
+              <div className="hidden sm:flex gap-2 flex-shrink-0 ml-3">
+                <button
+                  onClick={() => generateContractPDF(editing)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors bg-white"
+                >
+                  <Eye size={14} /> Preview
+                </button>
+                <button
+                  onClick={saveContract}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
+                  style={{ background: accentColor }}
+                >
+                  <Check size={14} /> Save Contract
+                </button>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
+
+            {/* ── Contract Details ── */}
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2.5 mb-4">Contract Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Field label="Contract Number"><Input value={editing.contractNumber} onChange={set("contractNumber")} /></Field>
+                <Field label="Contract Date"><Input type="date" value={editing.contractDate} onChange={set("contractDate")} /></Field>
+                <Field label="Status">
+                  <Select value={editing.status} onChange={set("status")}>
+                    {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </Select>
+                </Field>
+                <Field label="Project Start Date"><Input type="date" value={editing.startDate} onChange={set("startDate")} /></Field>
+                <Field label="Estimated End Date"><Input type="date" value={editing.endDate} onChange={set("endDate")} /></Field>
+                <Field label="Currency">
+                  <Select value={editing.currency} onChange={set("currency")}>
+                    <option value="GHS">GHS — Ghanaian Cedis</option>
+                    <option value="USD">USD — US Dollars</option>
+                  </Select>
+                </Field>
+              </div>
+            </div>
+
+            {/* ── Client Information ── */}
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2.5 mb-4">Client Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Client Name" required><Input value={editing.clientName} onChange={set("clientName")} placeholder="Full name of the client" /></Field>
+                <Field label="Company / Brand Name"><Input value={editing.clientCompany} onChange={set("clientCompany")} placeholder="Business or brand name" /></Field>
+                <Field label="Client Email"><Input type="email" value={editing.clientEmail} onChange={set("clientEmail")} placeholder="client@email.com" /></Field>
+                <Field label="Client Phone"><Input value={editing.clientPhone} onChange={set("clientPhone")} placeholder="+233 ..." /></Field>
+                <Field label="Client Address"><Input value={editing.clientAddress} onChange={set("clientAddress")} placeholder="Address, City, Country" /></Field>
+                <Field label="Project Title" required><Input value={editing.projectTitle} onChange={set("projectTitle")} placeholder="e.g., Logo Design for XYZ Brand" /></Field>
+              </div>
+            </div>
+
+            {/* ── Services & Pricing ── */}
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2.5 mb-4">Services & Pricing</h3>
+              <p className="text-sm text-gray-500 mb-4">Select all services that apply to this contract:</p>
+              <div className="flex flex-col gap-2.5 mb-5">
+                {typeInfo.services.map(s => {
+                  const selected = editing.servicesSelected.includes(s.label);
+                  return (
+                    <div key={s.label} onClick={() => toggleService(s.label)}
+                      className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all"
+                      style={{ border: `2px solid ${selected ? accentColor : "#e5e7eb"}`, background: selected ? accentColor + "0d" : "#fafafa" }}>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center flex-shrink-0"
+                          style={{ width: 20, height: 20, borderRadius: 4, border: `2px solid ${selected ? accentColor : "#ccc"}`, background: selected ? accentColor : "transparent" }}>
+                          {selected && <Check size={12} color="#fff" />}
+                        </div>
+                        <span className="text-sm" style={{ fontWeight: selected ? 600 : 400, color: selected ? "#111" : "#555" }}>{s.label}</span>
+                      </div>
+                      <span className="text-xs text-gray-500 font-mono ml-2 flex-shrink-0">GHS {s.ghsMin.toLocaleString()}–{s.ghsMax.toLocaleString()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <Field label="Custom / Additional Services">
+                <Textarea value={editing.customServices} onChange={set("customServices")} placeholder="Any additional services not listed above..." rows={2} />
+              </Field>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <Field label="Agreed Project Amount" required>
+                  <Input type="number" value={editing.agreedAmount} onChange={set("agreedAmount")} placeholder="0.00" />
+                </Field>
+                <Field label="Deposit %">
+                  <Input type="number" value={editing.depositPercent} onChange={set("depositPercent")} placeholder="50" />
+                </Field>
+                <Field label="Rush Fee %">
+                  <Input type="number" value={editing.rushFeePercent} onChange={set("rushFeePercent")} placeholder="20" />
+                </Field>
+                <Field label="Revisions Included">
+                  <Input type="number" value={editing.revisionsIncluded} onChange={set("revisionsIncluded")} placeholder="2" />
+                </Field>
+                <Field label="Additional Revision Rate">
+                  <Input type="number" value={editing.revisionRate} onChange={set("revisionRate")} placeholder="150" />
+                </Field>
+              </div>
+            </div>
+
+            {/* ── Deliverables & Requirements ── */}
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2.5 mb-4">Deliverables & Requirements</h3>
+              <div className="flex flex-col gap-4">
+                <Field label="Specific Deliverables (one per line)">
+                  <Textarea value={editing.deliverables} onChange={set("deliverables")} placeholder={"e.g., 3 initial logo concepts\nFinal logo: PNG, SVG, PDF\nBrand color palette"} rows={5} />
+                </Field>
+                <Field label="Special Requirements">
+                  <Textarea value={editing.specialRequirements} onChange={set("specialRequirements")} placeholder="Print method, color specs, garment types, dimensions, etc." rows={3} />
+                </Field>
+              </div>
+            </div>
+
+            {/* ── Payment Information ── */}
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2.5 mb-4">Payment Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Field label="Account Number"><Input value={editing.paymentAccount} onChange={set("paymentAccount")} /></Field>
+                <Field label="Institution"><Input value={editing.paymentInstitution} onChange={set("paymentInstitution")} /></Field>
+                <Field label="Beneficiary"><Input value={editing.paymentBeneficiary} onChange={set("paymentBeneficiary")} /></Field>
+              </div>
+            </div>
+
+            {/* ── Intellectual Property ── */}
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2.5 mb-4">Intellectual Property</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="License Type">
+                  <Select value={editing.licenseType} onChange={set("licenseType")}>
+                    <option>Non-exclusive commercial</option>
+                    <option>Exclusive commercial</option>
+                    <option>Full assignment of rights</option>
+                    <option>Limited usage license</option>
+                  </Select>
+                </Field>
+                <Field label="Source Files Fee (if sold separately)">
+                  <Input value={editing.sourceFilesFee} onChange={set("sourceFilesFee")} placeholder="0.00" />
+                </Field>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                {[
+                  ["portfolioRights", "CGY Portfolio Rights", "CGY may display this work publicly"],
+                  ["sourceFilesIncluded", "Source Files Included", "Native files (.AI, .PSD) are included"],
+                  ["exclusivity", "Exclusive License", "CGY won't use similar designs for others"],
+                ].map(([key, label, desc]) => (
+                  <div key={key} onClick={toggle(key)}
+                    className="flex-1 p-3.5 rounded-lg cursor-pointer transition-all"
+                    style={{ border: `2px solid ${editing[key] ? accentColor : "#e5e7eb"}`, background: editing[key] ? accentColor + "0d" : "#fafafa" }}>
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <div className="flex items-center justify-center flex-shrink-0"
+                        style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${editing[key] ? accentColor : "#ccc"}`, background: editing[key] ? accentColor : "transparent" }}>
+                        {editing[key] && <Check size={11} color="#fff" />}
+                      </div>
+                      <span className="text-sm font-semibold" style={{ color: editing[key] ? "#111" : "#555" }}>{label}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-7">{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Bottom action row (desktop) ── */}
+            <div className="hidden sm:flex gap-3 justify-end pb-6">
               <button
                 onClick={() => { setEditing(null); setView("dashboard"); }}
-                className={matchInvoiceUI ? "flex items-center gap-2 px-4 py-2 rounded-lg font-medium border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition" : ""}
-                style={matchInvoiceUI ? undefined : cancelBtnStyle}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold border border-gray-300 text-gray-600 hover:bg-gray-100 transition bg-white"
               >
-                <X size={16} /> {matchInvoiceUI ? "Back to contracts" : "Cancel"}
+                <X size={15} /> Cancel
               </button>
-              <button onClick={() => generateContractPDF(editing)} style={previewBtnStyle}>
-                <Eye size={16} /> Preview PDF
+              <button onClick={() => generateContractPDF(editing)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold border border-gray-300 text-gray-700 hover:bg-gray-100 transition bg-white">
+                <Eye size={15} /> Preview PDF
               </button>
-              <button onClick={saveContract} style={saveBtnStyle}>
+              <button onClick={saveContract}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-white shadow-sm hover:opacity-90 transition"
+                style={{ background: accentColor }}>
                 <Check size={16} /> Save Contract
               </button>
             </div>
           </div>
+
+          {/* ── Mobile bottom action bar ── */}
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-2.5 z-40 shadow-lg">
+            <button
+              onClick={() => { setEditing(null); setView("dashboard"); }}
+              className="flex items-center justify-center px-3 py-2.5 rounded-lg border border-gray-300 text-gray-600 bg-white"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <button
+              onClick={() => generateContractPDF(editing)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold border border-gray-300 text-gray-600 bg-white"
+            >
+              <Eye size={15} /> Preview
+            </button>
+            <button
+              onClick={saveContract}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold text-white shadow-sm"
+              style={{ background: accentColor }}
+            >
+              <Check size={15} /> Save
+            </button>
+          </div>
         </div>
+      );
+    }
 
-        <div className={matchInvoiceUI ? "max-w-4xl mx-auto px-4 py-6 md:py-8 flex flex-col gap-6" : ""} style={matchInvoiceUI ? undefined : { maxWidth: 900, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
+    /* ── Standalone (non-matchInvoiceUI) editor ── */
+    const editorRootStyle = { minHeight: "100vh", background: "#f8f8f8", fontFamily: "'DM Sans', sans-serif" };
+    const headerStyle = { background: "#111", color: "#fff", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" };
+    const headerInnerStyle = { maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 };
+    const cancelBtnStyle = { ...btnGhost, background: "transparent", color: "#aaa", border: "1px solid #333" };
+    const previewBtnStyle = { ...btnGhost, background: "transparent", color: "#aaa", border: "1px solid #333" };
+    const saveBtnStyle = { background: accentColor, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 };
 
-          {/* Section: Contract Info */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Contract Details</h3>
+    return (
+      <div style={editorRootStyle}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap'); * { box-sizing: border-box; } @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }`}</style>
+        <Notif notif={notif} onClose={() => setNotif({ show: false })} />
+        <div style={headerStyle}>
+          <div style={headerInnerStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: BRAND.red }}>CGY</span>
+              <div style={{ width: 1, height: 28, background: "#333" }} />
+              <span style={{ fontSize: 13, color: "#aaa" }}>{editing.contractNumber}</span>
+              <span style={{ fontSize: 11, background: accentColor + "22", color: accentColor, padding: "2px 10px", borderRadius: 20, fontWeight: 700 }}>{typeInfo.label}</span>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => { setEditing(null); setView("dashboard"); }} style={cancelBtnStyle}><X size={16} /> Cancel</button>
+              <button onClick={() => generateContractPDF(editing)} style={previewBtnStyle}><Eye size={16} /> Preview PDF</button>
+              <button onClick={saveContract} style={saveBtnStyle}><Check size={16} /> Save Contract</button>
+            </div>
+          </div>
+        </div>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px", display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <h3 style={{ fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` }}>Contract Details</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
               <Field label="Contract Number"><Input value={editing.contractNumber} onChange={set("contractNumber")} /></Field>
               <Field label="Contract Date"><Input type="date" value={editing.contractDate} onChange={set("contractDate")} /></Field>
-              <Field label="Status">
-                <Select value={editing.status} onChange={set("status")}>
-                  {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                </Select>
-              </Field>
+              <Field label="Status"><Select value={editing.status} onChange={set("status")}>{STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</Select></Field>
               <Field label="Project Start Date"><Input type="date" value={editing.startDate} onChange={set("startDate")} /></Field>
               <Field label="Estimated End Date"><Input type="date" value={editing.endDate} onChange={set("endDate")} /></Field>
-              <Field label="Currency">
-                <Select value={editing.currency} onChange={set("currency")}>
-                  <option value="GHS">GHS — Ghanaian Cedis</option>
-                  <option value="USD">USD — US Dollars</option>
-                </Select>
-              </Field>
+              <Field label="Currency"><Select value={editing.currency} onChange={set("currency")}><option value="GHS">GHS — Ghanaian Cedis</option><option value="USD">USD — US Dollars</option></Select></Field>
             </div>
           </div>
-
-          {/* Section: Client Info */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Client Information</h3>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <h3 style={{ fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` }}>Client Information</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <Field label="Client Name" required><Input value={editing.clientName} onChange={set("clientName")} placeholder="Full name of the client" /></Field>
               <Field label="Company / Brand Name"><Input value={editing.clientCompany} onChange={set("clientCompany")} placeholder="Business or brand name" /></Field>
               <Field label="Client Email"><Input type="email" value={editing.clientEmail} onChange={set("clientEmail")} placeholder="client@email.com" /></Field>
               <Field label="Client Phone"><Input value={editing.clientPhone} onChange={set("clientPhone")} placeholder="+233 ..." /></Field>
-              <Field label="Client Address" ><Input value={editing.clientAddress} onChange={set("clientAddress")} placeholder="Address, City, Country" /></Field>
+              <Field label="Client Address"><Input value={editing.clientAddress} onChange={set("clientAddress")} placeholder="Address, City, Country" /></Field>
               <Field label="Project Title" required><Input value={editing.projectTitle} onChange={set("projectTitle")} placeholder="e.g., Logo Design for XYZ Brand" /></Field>
             </div>
           </div>
-
-          {/* Section: Services */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 16, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Services & Pricing</h3>
-            <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Select all services that apply to this contract:</p>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <h3 style={{ fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 16, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` }}>Services & Pricing</h3>
+            <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Select all services that apply:</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
               {typeInfo.services.map(s => {
                 const selected = editing.servicesSelected.includes(s.label);
@@ -704,63 +905,34 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
                 );
               })}
             </div>
-            <Field label="Custom / Additional Services">
-              <Textarea value={editing.customServices} onChange={set("customServices")} placeholder="Any additional services not listed above..." rows={2} />
-            </Field>
+            <Field label="Custom / Additional Services"><Textarea value={editing.customServices} onChange={set("customServices")} placeholder="Any additional services not listed above..." rows={2} /></Field>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginTop: 16 }}>
-              <Field label="Agreed Project Amount" required>
-                <Input type="number" value={editing.agreedAmount} onChange={set("agreedAmount")} placeholder="0.00" />
-              </Field>
-              <Field label="Deposit %">
-                <Input type="number" value={editing.depositPercent} onChange={set("depositPercent")} placeholder="50" />
-              </Field>
-              <Field label="Rush Fee %">
-                <Input type="number" value={editing.rushFeePercent} onChange={set("rushFeePercent")} placeholder="20" />
-              </Field>
-              <Field label="Revisions Included">
-                <Input type="number" value={editing.revisionsIncluded} onChange={set("revisionsIncluded")} placeholder="2" />
-              </Field>
-              <Field label="Additional Revision Rate">
-                <Input type="number" value={editing.revisionRate} onChange={set("revisionRate")} placeholder="150" />
-              </Field>
+              <Field label="Agreed Project Amount" required><Input type="number" value={editing.agreedAmount} onChange={set("agreedAmount")} placeholder="0.00" /></Field>
+              <Field label="Deposit %"><Input type="number" value={editing.depositPercent} onChange={set("depositPercent")} placeholder="50" /></Field>
+              <Field label="Rush Fee %"><Input type="number" value={editing.rushFeePercent} onChange={set("rushFeePercent")} placeholder="20" /></Field>
+              <Field label="Revisions Included"><Input type="number" value={editing.revisionsIncluded} onChange={set("revisionsIncluded")} placeholder="2" /></Field>
+              <Field label="Additional Revision Rate"><Input type="number" value={editing.revisionRate} onChange={set("revisionRate")} placeholder="150" /></Field>
             </div>
           </div>
-
-          {/* Section: Deliverables */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Deliverables & Requirements</h3>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <h3 style={{ fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` }}>Deliverables & Requirements</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <Field label="Specific Deliverables (one per line)">
-                <Textarea value={editing.deliverables} onChange={set("deliverables")} placeholder={"e.g., 3 initial logo concepts\nFinal logo: PNG, SVG, PDF\nBrand color palette"} rows={5} />
-              </Field>
-              <Field label="Special Requirements">
-                <Textarea value={editing.specialRequirements} onChange={set("specialRequirements")} placeholder="Print method, color specs, garment types, dimensions, etc." rows={3} />
-              </Field>
+              <Field label="Specific Deliverables (one per line)"><Textarea value={editing.deliverables} onChange={set("deliverables")} placeholder={"e.g., 3 initial logo concepts\nFinal logo: PNG, SVG, PDF\nBrand color palette"} rows={5} /></Field>
+              <Field label="Special Requirements"><Textarea value={editing.specialRequirements} onChange={set("specialRequirements")} placeholder="Print method, color specs, garment types, dimensions, etc." rows={3} /></Field>
             </div>
           </div>
-
-          {/* Section: Payment */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Payment Information</h3>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <h3 style={{ fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` }}>Payment Information</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
               <Field label="Account Number"><Input value={editing.paymentAccount} onChange={set("paymentAccount")} /></Field>
               <Field label="Institution"><Input value={editing.paymentInstitution} onChange={set("paymentInstitution")} /></Field>
               <Field label="Beneficiary"><Input value={editing.paymentBeneficiary} onChange={set("paymentBeneficiary")} /></Field>
             </div>
           </div>
-
-          {/* Section: IP */}
-          <div className={cardClass} style={cardStyle}>
-            <h3 className={sectionTitleClass} style={!matchInvoiceUI ? { fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` } : undefined}>Intellectual Property</h3>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+            <h3 style={{ fontFamily: "'DM Serif Display'", fontSize: 18, marginBottom: 20, color: accentColor, paddingBottom: 10, borderBottom: `2px solid ${accentColor}22` }}>Intellectual Property</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Field label="License Type">
-                <Select value={editing.licenseType} onChange={set("licenseType")}>
-                  <option>Non-exclusive commercial</option>
-                  <option>Exclusive commercial</option>
-                  <option>Full assignment of rights</option>
-                  <option>Limited usage license</option>
-                </Select>
-              </Field>
+              <Field label="License Type"><Select value={editing.licenseType} onChange={set("licenseType")}><option>Non-exclusive commercial</option><option>Exclusive commercial</option><option>Full assignment of rights</option><option>Limited usage license</option></Select></Field>
               <Field label="Source Files Fee (if sold separately)"><Input value={editing.sourceFilesFee} onChange={set("sourceFilesFee")} placeholder="0.00" /></Field>
             </div>
             <div style={{ display: "flex", gap: 16, marginTop: 16, flexWrap: "wrap" }}>
@@ -782,29 +954,250 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
               ))}
             </div>
           </div>
-
-          {/* Save buttons */}
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", paddingBottom: 40 }}>
-            <button
-              onClick={() => { setEditing(null); setView("dashboard"); }}
-              className={matchInvoiceUI ? "flex items-center gap-2 px-4 py-2 rounded-lg font-medium border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition" : ""}
-              style={matchInvoiceUI ? undefined : btnGhost}
-            >
-              <X size={16} /> {matchInvoiceUI ? "Back to contracts" : "Cancel"}
-            </button>
-            <button onClick={() => generateContractPDF(editing)} style={btnBlack}><Eye size={16} /> Preview PDF</button>
-            <button onClick={saveContract} style={{ ...btnRed, background: accentColor, fontSize: 15, padding: "12px 28px" }}><Check size={18} /> Save Contract</button>
+            <button onClick={() => { setEditing(null); setView("dashboard"); }} style={cancelBtnStyle}><X size={16} /> Cancel</button>
+            <button onClick={() => generateContractPDF(editing)} style={previewBtnStyle}><Eye size={16} /> Preview PDF</button>
+            <button onClick={saveContract} style={{ ...saveBtnStyle, fontSize: 15, padding: "12px 28px" }}><Check size={18} /> Save Contract</button>
           </div>
         </div>
       </div>
     );
   }
 
-  /* ── DASHBOARD VIEW ── */
-  const dashboardRootStyle = matchInvoiceUI ? { minHeight: "100%", background: "transparent" } : { minHeight: "100vh", background: "#f8f8f8", fontFamily: "'DM Sans', sans-serif" };
+  /* ── DASHBOARD VIEW — matchInvoiceUI ── */
+  if (matchInvoiceUI) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-24 md:pb-8">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+          * { box-sizing: border-box; }
+          @keyframes slideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+          .contract-card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
+          .contract-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); transform: translateY(-1px); }
+          .action-btn:hover { opacity: 0.8; }
+        `}</style>
+        <Notif notif={notif} onClose={() => setNotif({ show: false })} />
 
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
+          {/* Desktop nav */}
+          <div className="no-print hidden md:flex mb-6 gap-3">
+            <button
+              onClick={() => setCurrentView("create")}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition ${
+                currentView === "create" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <FileText size={18} /> Contracts
+            </button>
+            <button
+              onClick={() => setCurrentView("stats")}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition ${
+                currentView === "stats" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <BarChart3 size={18} /> Statistics
+            </button>
+          </div>
+
+          {/* Mobile bottom nav */}
+          <div className="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-40">
+            <div className="flex justify-around items-center h-16">
+              <button
+                onClick={() => setCurrentView("create")}
+                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 transition ${
+                  currentView === "create" ? "text-blue-500" : "text-gray-500"
+                }`}
+              >
+                <FileText size={22} />
+                <span className="text-xs font-semibold">Contracts</span>
+              </button>
+              <button
+                onClick={() => setCurrentView("stats")}
+                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 transition ${
+                  currentView === "stats" ? "text-blue-500" : "text-gray-500"
+                }`}
+              >
+                <BarChart3 size={22} />
+                <span className="text-xs font-semibold">Stats</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ── Statistics view ── */}
+          {currentView === "stats" && (
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
+              <h2 className="text-xl md:text-2xl font-bold mb-5">Contract Statistics</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
+                <div className="bg-gray-50 p-4 md:p-5 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Total Contracts</div>
+                  <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.total}</div>
+                </div>
+                <div className="bg-red-50 p-4 md:p-5 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Design</div>
+                  <div className="text-2xl md:text-3xl font-bold text-red-600">{stats.graphic}</div>
+                </div>
+                <div className="bg-amber-50 p-4 md:p-5 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Merch</div>
+                  <div className="text-2xl md:text-3xl font-bold text-amber-700">{stats.merch}</div>
+                </div>
+                <div className="bg-green-50 p-4 md:p-5 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Signed / Active</div>
+                  <div className="text-2xl md:text-3xl font-bold text-green-600">{stats.signed}</div>
+                </div>
+                <div className="bg-gray-50 p-4 md:p-5 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Drafts</div>
+                  <div className="text-2xl md:text-3xl font-bold text-gray-500">{stats.draft}</div>
+                </div>
+                <div className="bg-blue-50 p-4 md:p-5 rounded-lg border border-blue-100 col-span-2 md:col-span-1">
+                  <div className="text-xs text-blue-500 mb-1.5 font-medium uppercase tracking-wide">Total Value</div>
+                  <div className="text-lg md:text-xl font-bold text-blue-700">
+                    GHS {stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Create / List view ── */}
+          {currentView === "create" && (
+            <>
+              {/* Create buttons */}
+              <div className="mb-5 flex flex-wrap gap-3">
+                <button
+                  onClick={() => newContract("graphic")}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm transition bg-blue-500 text-white hover:bg-blue-600 shadow-sm"
+                >
+                  <Briefcase size={16} /> + Design Contract
+                </button>
+                <button
+                  onClick={() => newContract("merch")}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm transition bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                >
+                  <Scissors size={16} /> + Merch Contract
+                </button>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-3 mb-4">
+                <div className="relative flex-1" style={{ minWidth: 180 }}>
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search by client, #, or project..."
+                    className="w-full border-2 border-gray-200 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:border-blue-400 focus:outline-none bg-white"
+                  />
+                </div>
+                <select
+                  value={filterType}
+                  onChange={e => setFilterType(e.target.value)}
+                  className="border-2 border-gray-200 rounded-lg py-2.5 px-3 text-sm bg-white focus:border-blue-400 focus:outline-none"
+                >
+                  <option value="all">All Types</option>
+                  <option value="graphic">Graphic Design</option>
+                  <option value="merch">Merch Design</option>
+                </select>
+                <select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                  className="border-2 border-gray-200 rounded-lg py-2.5 px-3 text-sm bg-white focus:border-blue-400 focus:outline-none"
+                >
+                  <option value="all">All Statuses</option>
+                  {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              {/* Contract list */}
+              {filtered.length === 0 ? (
+                <div className="text-center py-16 px-6 bg-white rounded-xl shadow-sm">
+                  <p className="text-gray-500 text-base mb-6">
+                    {contracts.length === 0 ? "No contracts yet. Create your first one!" : "No contracts match your filters."}
+                  </p>
+                  <div className="flex gap-3 justify-center flex-wrap">
+                    <button onClick={() => newContract("graphic")} className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-blue-500 text-white hover:bg-blue-600 shadow-sm transition">
+                      <Briefcase size={18} /> + Design Contract
+                    </button>
+                    <button onClick={() => newContract("merch")} className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 transition">
+                      <Scissors size={18} /> + Merch Contract
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {filtered.map(c => {
+                    const typeInfo = CONTRACT_TYPES[c.type];
+                    const deposit = c.agreedAmount ? ((parseFloat(c.agreedAmount) * c.depositPercent) / 100).toFixed(2) : "—";
+                    return (
+                      <div key={c.id} className="contract-card bg-white rounded-xl shadow-sm p-4 border-l-4" style={{ borderLeftColor: typeInfo.color }}>
+                        <div className="flex items-start gap-3">
+                          {/* Type icon */}
+                          <div className="flex-shrink-0 flex items-center justify-center mt-0.5"
+                            style={{ width: 40, height: 40, borderRadius: 10, background: typeInfo.color + '15' }}>
+                            {c.type === "graphic" ? <Briefcase size={18} color={typeInfo.color} /> : <Scissors size={18} color={typeInfo.color} />}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                              <span className="text-sm font-bold text-gray-900 truncate">{c.projectTitle || "Untitled Project"}</span>
+                              <StatusBadge status={c.status} />
+                            </div>
+                            <div className="flex gap-3 text-xs text-gray-500 flex-wrap mb-2">
+                              <span className="flex items-center gap-1"><User size={11} /> {c.clientName || "—"}</span>
+                              <span className="flex items-center gap-1"><FileText size={11} /> {c.contractNumber}</span>
+                              <span className="hidden sm:flex items-center gap-1"><Calendar size={11} /> {fmtDate(c.contractDate)}</span>
+                              <span className="font-semibold" style={{ color: typeInfo.color }}>
+                                {c.currency} {c.agreedAmount ? parseFloat(c.agreedAmount).toLocaleString() : "—"}
+                              </span>
+                            </div>
+                            {c.servicesSelected.length > 0 && (
+                              <div className="flex gap-1.5 flex-wrap">
+                                {c.servicesSelected.slice(0, 3).map(s => (
+                                  <span key={s} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{s}</span>
+                                ))}
+                                {c.servicesSelected.length > 3 && <span className="text-xs text-gray-400">+{c.servicesSelected.length - 3} more</span>}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Deposit — desktop */}
+                          <div className="hidden md:block text-right flex-shrink-0 ml-2">
+                            <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Deposit</div>
+                            <div className="text-sm font-bold text-gray-800">{c.currency} {deposit}</div>
+                            <div className="text-xs text-gray-400">{c.depositPercent}%</div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 mt-3 flex-wrap">
+                          <button onClick={() => editContract(c)} className="action-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "#3b82f6" }}>
+                            <Edit2 size={13} /> Edit
+                          </button>
+                          <button onClick={() => generateContractPDF(c)} className="action-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: typeInfo.color }}>
+                            <Download size={13} /> PDF
+                          </button>
+                          <button onClick={() => duplicateContract(c)} className="action-btn p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">
+                            <Copy size={13} />
+                          </button>
+                          <button onClick={() => deleteContract(c.id)} className="action-btn p-1.5 rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-100">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── DASHBOARD VIEW — standalone (non-matchInvoiceUI) ── */
   return (
-    <div style={dashboardRootStyle} className={matchInvoiceUI ? "min-h-full" : ""}>
+    <div style={{ minHeight: "100vh", background: "#f8f8f8", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
         * { box-sizing: border-box; }
@@ -821,148 +1214,47 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
       `}</style>
       <Notif notif={notif} onClose={() => setNotif({ show: false })} />
 
-      {/* TOP NAV — same as Invoice when matchInvoiceUI: Create Contract | Statistics */}
-      {matchInvoiceUI ? (
-        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
-          <div className="no-print hidden md:flex mb-6 gap-4">
-            <button
-              onClick={() => setCurrentView("create")}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${
-                currentView === "create" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <FileText size={20} /> Create Contract
+      {/* Standalone dark header */}
+      <div style={{ background: "#111", color: "#fff", padding: "0 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 26, color: BRAND.red, lineHeight: 1 }}>CGY</span>
+            <div style={{ width: 1, height: 28, background: "#333" }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Contract Manager</div>
+              <div style={{ fontSize: 10, color: "#888", letterSpacing: "0.06em", textTransform: "uppercase" }}>Curio Graphics Yard</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => newContract("graphic")} style={{ background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <Briefcase size={15} /> + Design Contract
             </button>
-            <button
-              onClick={() => setCurrentView("stats")}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition ${
-                currentView === "stats" ? "bg-blue-500 text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <BarChart3 size={20} /> Statistics
+            <button onClick={() => newContract("merch")} style={{ background: BRAND.gold, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <Scissors size={15} /> + Merch Contract
             </button>
           </div>
-
-          {/* Mobile bottom nav — same as Invoice */}
-          <div className="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-40">
-            <div className="flex justify-around items-center h-16">
-              <button
-                onClick={() => setCurrentView("create")}
-                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
-                  currentView === "create" ? "text-blue-500" : "text-gray-600"
-                }`}
-              >
-                <FileText size={22} />
-                <span className="text-xs font-medium">Create</span>
-              </button>
-              <button
-                onClick={() => setCurrentView("stats")}
-                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition ${
-                  currentView === "stats" ? "text-blue-500" : "text-gray-600"
-                }`}
-              >
-                <BarChart3 size={22} />
-                <span className="text-xs font-medium">Stats</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Stats view — same layout as Invoice Statistics */}
-          {currentView === "stats" && (
-            <div className="no-print bg-white p-4 md:p-6 rounded-lg shadow-sm mb-4">
-              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Contract Statistics</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-                <div className="bg-gray-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Total Contracts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.total}</div>
-                </div>
-                <div className="bg-red-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Design Contracts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-red-600">{stats.graphic}</div>
-                </div>
-                <div className="bg-amber-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Merch Contracts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-amber-700">{stats.merch}</div>
-                </div>
-                <div className="bg-green-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Signed / Active</div>
-                  <div className="text-2xl md:text-3xl font-bold text-green-600">{stats.signed}</div>
-                </div>
-                <div className="bg-gray-50 p-4 md:p-6 rounded">
-                  <div className="text-xs md:text-sm text-gray-600 mb-2">Drafts</div>
-                  <div className="text-2xl md:text-3xl font-bold text-gray-700">{stats.draft}</div>
-                </div>
-                <div className="bg-blue-50 p-4 md:p-6 rounded border border-blue-100">
-                  <div className="text-xs md:text-sm text-blue-600 mb-2">Total Contract Value</div>
-                  <div className="text-xl md:text-2xl font-bold text-blue-700">
-                    GHS {stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Create view: add buttons, then filters + list (same theme as Invoice) */}
-          {currentView === "create" && (
-            <>
-              <div className="mb-6 gap-4 flex flex-wrap">
-                <button onClick={() => newContract("graphic")} className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition bg-blue-500 text-white hover:bg-blue-600 shadow-md">
-                  <Briefcase size={20} /> + Design Contract
-                </button>
-                <button onClick={() => newContract("merch")} className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300">
-                  <Scissors size={20} /> + Merch Contract
-                </button>
-              </div>
-            </>
-          )}
         </div>
-      ) : (
-        <div style={{ background: "#111", color: "#fff", padding: "0 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", position: "sticky", top: 0, zIndex: 100 }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 26, color: BRAND.red, lineHeight: 1 }}>CGY</span>
-              <div style={{ width: 1, height: 28, background: "#333" }} />
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Contract Manager</div>
-                <div style={{ fontSize: 10, color: "#888", letterSpacing: "0.06em", textTransform: "uppercase" }}>Curio Graphics Yard</div>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => newContract("graphic")} style={{ background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <Briefcase size={15} /> + Design Contract
-              </button>
-              <button onClick={() => newContract("merch")} style={{ background: BRAND.gold, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <Scissors size={15} /> + Merch Contract
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
-      <div style={matchInvoiceUI ? undefined : { maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }} className={matchInvoiceUI ? "max-w-6xl mx-auto px-4 py-4 md:py-8" : ""}>
-        {/* When matchInvoiceUI, stat cards only in Statistics tab; show filters+list only in Create tab */}
-        {(!matchInvoiceUI || currentView === "create") && (
-        <>
-        {/* STAT CARDS — only when !matchInvoiceUI (stats are in Statistics view when matchInvoiceUI) */}
-        {!matchInvoiceUI && (
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
+        {/* Stat cards */}
         <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 14, marginBottom: 28 }}>
           {[
-            { label: "Total Contracts", value: stats.total, color: "#111", bgClass: matchInvoiceUI ? "bg-gray-50" : null },
-            { label: "Design Contracts", value: stats.graphic, color: BRAND.red, bgClass: matchInvoiceUI ? "bg-red-50" : null },
-            { label: "Merch Contracts", value: stats.merch, color: BRAND.gold, bgClass: matchInvoiceUI ? "bg-amber-50" : null },
-            { label: "Signed / Active", value: stats.signed, color: "#16a34a", bgClass: matchInvoiceUI ? "bg-green-50" : null },
-            { label: "Drafts", value: stats.draft, color: "#9ca3af", bgClass: matchInvoiceUI ? "bg-gray-50" : null },
-            { label: "Total Contract Value", value: `GHS ${stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: "#2563eb", small: true, bgClass: matchInvoiceUI ? "bg-blue-50" : null },
+            { label: "Total Contracts", value: stats.total, color: "#111" },
+            { label: "Design Contracts", value: stats.graphic, color: BRAND.red },
+            { label: "Merch Contracts", value: stats.merch, color: BRAND.gold },
+            { label: "Signed / Active", value: stats.signed, color: "#16a34a" },
+            { label: "Drafts", value: stats.draft, color: "#9ca3af" },
+            { label: "Total Contract Value", value: `GHS ${stats.totalValue.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: "#2563eb", small: true },
           ].map((s, i) => (
             <div key={i} style={{ background: "#fff", borderRadius: 10, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", borderTop: `3px solid ${s.color}` }}>
               <div style={{ fontSize: 11, color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>{s.label}</div>
-              <div style={{ fontSize: s.small ? 16 : 28, fontWeight: 700, color: s.color, fontFamily: s.small ? "inherit" : "'DM Serif Display', serif", lineHeight: 1.1 }}>{s.value}</div>
+              <div style={{ fontSize: s.small ? 16 : 28, fontWeight: 700, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
             </div>
           ))}
         </div>
-        )}
 
-        {/* FILTERS */}
+        {/* Filters */}
         <div className="filter-row" style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: "1 1 200px" }}>
             <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#aaa", pointerEvents: "none" }} />
@@ -982,34 +1274,31 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
           </select>
         </div>
 
-        {/* CONTRACTS LIST */}
+        {/* Contract list */}
         {filtered.length === 0 ? (
-          <div className={matchInvoiceUI ? "text-center py-16 px-6 bg-white rounded-lg shadow-sm" : ""} style={matchInvoiceUI ? undefined : { textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: 12 }}>
-            <p className={matchInvoiceUI ? "text-gray-600 text-base mb-6" : ""} style={matchInvoiceUI ? undefined : { color: "#aaa", fontSize: 16, marginBottom: 24 }}>
+          <div style={{ textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: 12 }}>
+            <p style={{ color: "#aaa", fontSize: 16, marginBottom: 24 }}>
               {contracts.length === 0 ? "No contracts yet. Create your first one!" : "No contracts match your filters."}
             </p>
-            <div className={matchInvoiceUI ? "flex gap-3 justify-center flex-wrap" : ""} style={matchInvoiceUI ? undefined : { display: "flex", gap: 12, justifyContent: "center" }}>
-              <button onClick={() => newContract("graphic")} className={matchInvoiceUI ? "flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 shadow-md transition" : ""} style={matchInvoiceUI ? undefined : { background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                <Briefcase size={20} /> + Design Contract
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button onClick={() => newContract("graphic")} style={{ background: BRAND.red, color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <Briefcase size={18} /> + Design Contract
               </button>
-              <button onClick={() => newContract("merch")} className={matchInvoiceUI ? "flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 transition" : ""} style={matchInvoiceUI ? undefined : { background: BRAND.gold, color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
-                <Scissors size={20} /> + Merch Contract
+              <button onClick={() => newContract("merch")} style={{ background: BRAND.gold, color: "#fff", border: "none", borderRadius: 8, padding: "12px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <Scissors size={18} /> + Merch Contract
               </button>
             </div>
           </div>
         ) : (
-          <div className={matchInvoiceUI ? "flex flex-col gap-3" : ""} style={matchInvoiceUI ? undefined : { display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {filtered.map(c => {
               const typeInfo = CONTRACT_TYPES[c.type];
               const deposit = c.agreedAmount ? ((parseFloat(c.agreedAmount) * c.depositPercent) / 100).toFixed(2) : "—";
               return (
-                <div key={c.id} className={`contract-card ${matchInvoiceUI ? "bg-white rounded-lg shadow-sm p-4 md:p-5 border-l-4 flex items-center gap-5" : ""}`} style={matchInvoiceUI ? { borderLeftColor: typeInfo.color } : { background: "#fff", borderRadius: 12, padding: "18px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", borderLeft: `4px solid ${typeInfo.color}`, display: "flex", alignItems: "center", gap: 20 }}>
-                  {/* Type icon */}
+                <div key={c.id} className="contract-card" style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)", borderLeft: `4px solid ${typeInfo.color}`, display: "flex", alignItems: "center", gap: 20 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 10, background: typeInfo.color + "15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     {c.type === "graphic" ? <Briefcase size={20} color={typeInfo.color} /> : <Scissors size={20} color={typeInfo.color} />}
                   </div>
-
-                  {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 15, fontWeight: 700, color: "#111" }}>{c.projectTitle || "Untitled Project"}</span>
@@ -1030,30 +1319,22 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
                       </div>
                     )}
                   </div>
-
-                  {/* Deposit pill */}
                   <div className="desktop-only" style={{ textAlign: "center", flexShrink: 0 }}>
                     <div style={{ fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 2 }}>Deposit</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{c.currency} {deposit}</div>
                     <div style={{ fontSize: 10, color: "#aaa" }}>{c.depositPercent}%</div>
                   </div>
-
-                  {/* Actions */}
                   <div className="contract-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <button onClick={() => editContract(c)} title="Edit" className="action-btn"
-                      style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 7, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
+                    <button onClick={() => editContract(c)} className="action-btn" style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 7, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
                       <Edit2 size={14} /> Edit
                     </button>
-                    <button onClick={() => generateContractPDF(c)} title="Export PDF" className="action-btn"
-                      style={{ background: typeInfo.color, color: "#fff", border: "none", borderRadius: 7, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
+                    <button onClick={() => generateContractPDF(c)} className="action-btn" style={{ background: typeInfo.color, color: "#fff", border: "none", borderRadius: 7, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
                       <Download size={14} /> PDF
                     </button>
-                    <button onClick={() => duplicateContract(c)} title="Duplicate" className="action-btn"
-                      style={{ background: "#f3f4f6", color: "#555", border: "1px solid #e5e7eb", borderRadius: 7, padding: "8px 10px", cursor: "pointer" }}>
+                    <button onClick={() => duplicateContract(c)} className="action-btn" style={{ background: "#f3f4f6", color: "#555", border: "1px solid #e5e7eb", borderRadius: 7, padding: "8px 10px", cursor: "pointer" }}>
                       <Copy size={14} />
                     </button>
-                    <button onClick={() => deleteContract(c.id)} title="Delete" className="action-btn"
-                      style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 7, padding: "8px 10px", cursor: "pointer" }}>
+                    <button onClick={() => deleteContract(c.id)} className="action-btn" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: 7, padding: "8px 10px", cursor: "pointer" }}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -1062,15 +1343,10 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
             })}
           </div>
         )}
-
-        {/* Bottom spacer for mobile */}
         <div style={{ height: 80 }} />
-        </>
-        )}
       </div>
 
-      {/* MOBILE BOTTOM NAV — only when !matchInvoiceUI */}
-      {!matchInvoiceUI && (
+      {/* Standalone mobile bottom nav */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #e5e7eb", padding: "8px 16px 12px", zIndex: 100 }}
         className="mobile-nav md:hidden">
         <div style={{ display: "flex", justifyContent: "space-around" }}>
@@ -1082,7 +1358,6 @@ export default function CGYContractManager({ matchInvoiceUI = false }) {
           </button>
         </div>
       </div>
-      )}
     </div>
   );
 }

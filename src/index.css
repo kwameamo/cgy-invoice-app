@@ -23,8 +23,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    /* Dot grid pattern */
+  background-image:
     radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: 0 0;
@@ -39,8 +38,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    /* Rectangular grid lines */
+  background-image:
     repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0, 0, 0, 0.04) 39px, rgba(0, 0, 0, 0.04) 40px),
     repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0, 0, 0, 0.04) 39px, rgba(0, 0, 0, 0.04) 40px);
   background-size: 40px 40px;
@@ -48,7 +46,7 @@
   opacity: 0.5;
 }
 
-/* Main content container with rounded corners */
+/* Main content container (kept for potential standalone use) */
 .main-content-frame {
   background-color: #f8f7f4;
   border-radius: 12px;
@@ -60,7 +58,7 @@
   overflow: hidden;
 }
 
-/* ─── App root & mode switcher ─── */
+/* ─── App root ─── */
 .app-root {
   min-height: 100vh;
   display: flex;
@@ -68,16 +66,16 @@
   background-color: #2a2a2a;
 }
 
-.app-switcher-header,
-.app-contract-header {
+/* ─── HEADER — LIGHT ─── */
+.app-switcher-header {
   flex-shrink: 0;
-  background: #1a1a1a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 10px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 20px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.07);
 }
 
 .app-switcher-inner {
@@ -86,97 +84,145 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  flex-wrap: wrap;
+  height: 58px;
 }
 
 .app-switcher-logo {
-  height: 36px;
+  height: 32px;
   width: auto;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
-/* Mode switcher pill (smooth sliding) — active state from data-active */
+/* ─── MODE SWITCHER — stylish crooked underline ─── */
 .mode-switcher {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 4px;
-  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
 }
 
 .mode-switcher-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  min-width: 140px;
-  justify-content: center;
+  position: relative;
+  height: 58px;
+  padding: 0 2px;
+  margin-right: 26px;
+  background: transparent;
   border: none;
-  border-radius: 10px;
+  color: rgba(0, 0, 0, 0.38);
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.65);
-  background: transparent;
   cursor: pointer;
-  position: relative;
-  z-index: 1;
-  transition: color 0.25s ease;
+  transition: color 0.22s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.mode-switcher-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 9px;
+  left: -1px;
+  right: -1px;
+  height: 2.5px;
+  background: #CC2222;
+  border-radius: 2px;
+  /* Slightly crooked — tilts just a touch for character */
+  transform: scaleX(0) rotate(-0.6deg);
+  transform-origin: left center;
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .mode-switcher-tab:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.mode-switcher-tab:last-child {
+  margin-right: 0;
 }
 
 .mode-switcher-tab.active {
-  color: #fff;
+  color: #111111;
 }
 
+.mode-switcher-tab.active::after {
+  transform: scaleX(1) rotate(-0.6deg);
+}
+
+/* Old pill — hidden (replaced by underline) */
 .mode-switcher-pill {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 140px;
-  height: calc(100% - 8px);
-  background: #3b82f6;
-  border-radius: 10px;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  display: none;
 }
 
-.mode-switcher[data-active="contract"] .mode-switcher-pill {
-  transform: translateX(calc(140px + 4px));
-}
+/* Short / full labels — desktop shows full, mobile shows short */
+.tab-label-short { display: none; }
+.tab-label-full  { display: inline; }
 
+/* ─── App content area ─── */
 .app-content {
   flex: 1;
   position: relative;
   min-height: 0;
 }
 
+/* ─── View panel enter animations ─── */
 .view-panel {
-  animation: viewFadeIn 0.35s ease-out;
+  animation: viewFadeIn 0.3s ease-out;
 }
 
 @keyframes viewFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
-.view-panel-invoice {
-  min-height: 100%;
+.view-panel-invoice  { min-height: 100%; }
+.view-panel-contract { min-height: 100%; }
+
+/* Contract editor enter — slides in from right slightly */
+@keyframes contractEditorEnter {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0);    }
 }
 
-.view-panel-contract {
-  min-height: 100%;
-  padding: 20px;
-  padding-top: 24px;
+.contract-editor-anim {
+  animation: contractEditorEnter 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Mobile responsive header ─── */
+@media (max-width: 639px) {
+  .app-switcher-header {
+    padding: 0 12px;
+  }
+
+  .app-switcher-inner {
+    gap: 10px;
+    height: 52px;
+  }
+
+  .app-switcher-logo {
+    height: 26px;
+  }
+
+  .mode-switcher-tab {
+    height: 52px;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-right: 10px;
+    gap: 5px;
+  }
+
+  .mode-switcher-tab::after {
+    bottom: 7px;
+    height: 2px;
+  }
+
+  /* On mobile show short labels, hide long ones */
+  .tab-label-full  { display: none;   }
+  .tab-label-short { display: inline; }
+
+  /* Logout: hide text on very small screens */
+  .logout-text { display: none; }
 }
