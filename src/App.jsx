@@ -1451,6 +1451,7 @@ const InvoiceGenerator = () => {
 function App() {
   const [mode, setMode] = useState('invoice');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
