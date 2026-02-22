@@ -59,3 +59,124 @@
   position: relative;
   overflow: hidden;
 }
+
+/* ─── App root & mode switcher ─── */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #2a2a2a;
+}
+
+.app-switcher-header,
+.app-contract-header {
+  flex-shrink: 0;
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app-switcher-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.app-switcher-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Mode switcher pill (smooth sliding) — active state from data-active */
+.mode-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 4px;
+  position: relative;
+}
+
+.mode-switcher-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  min-width: 140px;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease;
+}
+
+.mode-switcher-tab:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mode-switcher-tab.active {
+  color: #fff;
+}
+
+.mode-switcher-pill {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 140px;
+  height: calc(100% - 8px);
+  background: #3b82f6;
+  border-radius: 10px;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.mode-switcher[data-active="contract"] .mode-switcher-pill {
+  transform: translateX(calc(140px + 4px));
+}
+
+.app-content {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+.view-panel {
+  animation: viewFadeIn 0.35s ease-out;
+}
+
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-panel-invoice {
+  min-height: 100%;
+}
+
+.view-panel-contract {
+  min-height: 100%;
+  padding: 20px;
+  padding-top: 24px;
+}

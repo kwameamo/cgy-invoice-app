@@ -1,8 +1,38 @@
 import logo from './assets/cgy_logo_new.png';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Trash2, Download, BarChart3, FileText, LogOut, Edit2, X, Receipt, DollarSign, CheckCircle, AlertCircle, Info, RefreshCw, Search, Calendar } from 'lucide-react';
+import { Plus, Trash2, Download, BarChart3, FileText, LogOut, Edit2, X, Receipt, DollarSign, CheckCircle, AlertCircle, Info, RefreshCw, Search, Calendar, FileSignature } from 'lucide-react';
 import { auth, signInWithGoogle, signInWithApple, logout, getUserInvoices, saveInvoice as saveInvoiceToFirestore, deleteInvoice as deleteInvoiceFromFirestore, getUserCounter, updateUserCounter } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import CGYContractManager from './contracts';
+
+/* ─── Mode switcher: Invoice Generator ⟷ Contract Generator (shown in header after login) ─── */
+function ModeSwitcher({ mode, onModeChange }) {
+  return (
+    <div className="mode-switcher" data-active={mode} role="tablist" aria-label="Switch between Invoice and Contract">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={mode === 'invoice'}
+        onClick={() => onModeChange('invoice')}
+        className={`mode-switcher-tab ${mode === 'invoice' ? 'active' : ''}`}
+      >
+        <FileText size={18} aria-hidden />
+        <span>Invoice Generator</span>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={mode === 'contract'}
+        onClick={() => onModeChange('contract')}
+        className={`mode-switcher-tab ${mode === 'contract' ? 'active' : ''}`}
+      >
+        <FileSignature size={18} aria-hidden />
+        <span>Contract Generator</span>
+      </button>
+      <div className="mode-switcher-pill" aria-hidden />
+    </div>
+  );
+}
 
 const InvoiceGenerator = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -222,7 +252,7 @@ const InvoiceGenerator = () => {
               className="mx-auto mb-6 w-24 h-auto"
             />
             <h1 className="text-2xl font-semibold text-gray-900 mb-1">
-              Invoice Management
+              Zentra Command
             </h1>
           </div>
 
@@ -829,12 +859,6 @@ const InvoiceGenerator = () => {
           >
             <BarChart3 size={20} /> Statistics
           </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 ml-auto font-medium transition"
-          >
-            <LogOut size={20} /> Logout
-          </button>
         </div>
 
         {/* Mobile Bottom Navigation */}
@@ -857,13 +881,6 @@ const InvoiceGenerator = () => {
             >
               <BarChart3 size={22} />
               <span className="text-xs font-medium">Stats</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg text-red-500 transition"
-            >
-              <LogOut size={22} />
-              <span className="text-xs font-medium">Logout</span>
             </button>
           </div>
         </div>
@@ -1417,4 +1434,62 @@ const InvoiceGenerator = () => {
   );
 };
 
-export default InvoiceGenerator;
+/* ─── Root App: login shows CGY Ops (no header); after login, header with switcher (Invoice | Contract) + Logout ─── */
+function App() {
+  const [mode, setMode] = useState('invoice');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      if (!user) setMode('invoice');
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setMode('invoice');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return <InvoiceGenerator />;
+  }
+
+  return (
+    <div className="app-root">
+      <header className="app-switcher-header no-print">
+        <div className="app-switcher-inner">
+          <img src={logo} alt="CGY" className="app-switcher-logo" />
+          <ModeSwitcher mode={mode} onModeChange={setMode} />
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 ml-auto"
+          >
+            <LogOut size={18} /> Logout
+          </button>
+        </div>
+      </header>
+
+      <main className={`app-content app-content-${mode}`}>
+        {mode === 'invoice' && (
+          <div className="view-panel view-panel-invoice">
+            <InvoiceGenerator />
+          </div>
+        )}
+        {mode === 'contract' && (
+          <div className="view-panel view-panel-contract dot-grid-background main-content-frame">
+            <CGYContractManager matchInvoiceUI />
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;
