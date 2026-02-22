@@ -1,36 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
     // Invoices collection
     match /invoices/{invoiceId} {
-      // Allow read if user is authenticated and owns the invoice
-      allow read: if request.auth != null && 
-                     resource.data.userId == request.auth.uid;
-      
-      // Allow create if user is authenticated and sets their own userId
-      allow create: if request.auth != null && 
-                      request.resource.data.userId == request.auth.uid;
-      
-      // Allow update if user is authenticated and owns the invoice
-      allow update: if request.auth != null && 
-                      resource.data.userId == request.auth.uid &&
-                      request.resource.data.userId == request.auth.uid;
-      
-      // Allow delete if user is authenticated and owns the invoice
-      allow delete: if request.auth != null && 
-                      resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
-    
-    // Counters collection
+
+    // Invoice counters
     match /counters/{userId} {
-      // Allow read if user is authenticated and accessing their own counter
-      allow read: if request.auth != null && 
-                     userId == request.auth.uid;
-      
-      // Allow write if user is authenticated and accessing their own counter
-      allow write: if request.auth != null && 
-                     userId == request.auth.uid;
+      allow read, write: if request.auth != null && userId == request.auth.uid;
+    }
+
+    // Contracts collection
+    match /contracts/{contractId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Contract counters
+    match /contractCounters/{userId} {
+      allow read, write: if request.auth != null && userId == request.auth.uid;
     }
   }
 }
-
